@@ -16,15 +16,15 @@ if (!tokenMatch) {
 }
 const TOKEN = tokenMatch[1];
 
-// 2. Define files in data/ to push
-const filesToPush = [
-    'data/MEMORY.md',
-    'data/memory.db',
-    'data/memory.db-shm',
-    'data/memory.db-wal',
-    'data/collections/Articles/Chain_of_Draft.pdf',
-    'data/collections/Lean6Sigma/Certified Six Sigma Black Belt Handbook-ASQ (2009).pdf',
-    'data/collections/TestSpaces/File With Spaces.txt'
+// 2. Define files in workspace/ to push
+const dataFilesToPush = [
+    'workspace/MEMORY.md',
+    'workspace/memory.db',
+    'workspace/memory.db-shm',
+    'workspace/memory.db-wal',
+    'workspace/collections/Articles/Chain_of_Draft.pdf',
+    'workspace/collections/Lean6Sigma/Certified Six Sigma Black Belt Handbook-ASQ (2009).pdf',
+    'workspace/collections/TestSpaces/File With Spaces.txt'
 ];
 
 async function uploadFile(filePath) {

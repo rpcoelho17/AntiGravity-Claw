@@ -101,18 +101,20 @@ function vectorSearch(
 
     const params: any[] = [queryBuffer];
 
-    if (beforeId !== undefined && beforeId !== Infinity) {
-        sql += ` AND m.id < ? `;
-        params.push(beforeId);
-    }
-
     sql += ` AND k = CAST(? AS INTEGER) ORDER BY e.distance ASC `;
-    params.push(topK * 3);
+    // Fetch a larger pool because we do channel/collection/id filtering in JS
+    // We use a minimum of 100 to prevent conversational history from flooding out RAG documents
+    params.push(Math.max(100, topK * 10));
 
     const rows = db.prepare(sql).all(...params) as any[];
 
-    // Post-filter by channel/collection
+    // Post-filter by channel/collection and deduplicate recent messages
     const filtered = rows.filter(r => {
+        // Filter out recent verbatim conversation history
+        if (beforeId !== undefined && beforeId !== Infinity) {
+            if (r.type === "M" && r.id >= beforeId) return false;
+        }
+
         if (r.type === "M") return r.channel === channel;
         if (r.type === "R") {
             if (!collections || collections.length === 0) return true;
@@ -121,7 +123,7 @@ function vectorSearch(
         return false;
     });
 
-    return filtered.slice(0, topK).map(r => ({
+    return filtered.slice(0, topK * 5).map(r => ({
         ...r,
         prev_paragraph: null,
         next_paragraph: null,
@@ -166,17 +168,18 @@ function bm25Search(
             WHERE 1=1
         `;
 
-        const params: any[] = [safeQuery, topK * 3];
-
-        if (beforeId !== undefined && beforeId !== Infinity) {
-            sql += ` AND m.id < ? `;
-            params.push(beforeId);
-        }
+        // We use a minimum of 100 to prevent conversational history from flooding out RAG documents
+        const params: any[] = [safeQuery, Math.max(100, topK * 10)];
 
         const rows = db.prepare(sql).all(...params) as any[];
 
-        // Post-filter by channel/collection
+        // Post-filter by channel/collection and exclude recent messages
         const filtered = rows.filter(r => {
+            // Filter out recent verbatim conversation history
+            if (beforeId !== undefined && beforeId !== Infinity) {
+                if (r.type === "M" && r.id >= beforeId) return false;
+            }
+
             if (r.type === "M") return r.channel === channel;
             if (r.type === "R") {
                 if (!collections || collections.length === 0) return true;
@@ -269,8 +272,12 @@ export async function search(
         vecResults, bm25Results, vectorWeight, bm25Weight, halfLifeDays
     );
 
-    // Trim to topK
-    merged = merged.slice(0, topK);
+    // Prevent conversational flood from wiping out RAG documents
+    const bestDocs = merged.filter(r => r.type === "R").slice(0, topK);
+    const bestMsgs = merged.filter(r => r.type === "M").slice(0, Math.max(2, Math.floor(topK / 2)));
+
+    // Re-combine (keeping relative RRF order since they were extracted from merged)
+    merged = merged.filter(r => bestDocs.includes(r) || bestMsgs.includes(r));
 
     // Enrich RAG chunks with surrounding context
     merged = enrichWithContext(merged);

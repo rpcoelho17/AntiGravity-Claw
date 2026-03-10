@@ -4,7 +4,7 @@ import path from 'path';
 
 async function test_space() {
     console.log("Starting Space Filename Ingestion Test...");
-    const baseDir = "d:/FILES/Code/AntiGravityClaw/data/collections/TestSpaces";
+    const baseDir = "d:/FILES/Code/AntiGravityClaw/workspace/collections/TestSpaces";
     if (!fs.existsSync(baseDir)) fs.mkdirSync(baseDir, { recursive: true });
     
     // Create a dummy file with spaces

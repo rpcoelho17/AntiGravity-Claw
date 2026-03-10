@@ -66,7 +66,7 @@
 
 ```
 AntiGravityClaw/
-├── data/                           ← ALL DATA lives here
+├── workspace/                      ← ALL DATA lives here
 │   ├── memory.db                   ← Entire brain (chunks, embeddings, metadata)
 │   ├── MEMORY.md                   ← Curated facts about user
 │   └── collections/                ← Original RAG source files
@@ -113,8 +113,8 @@ AntiGravityClaw/
 
 To copy your brain to another machine:
 ```bash
-cp data/memory.db ~/backup/memory.db
-cp -r data/collections ~/backup/collections
+cp workspace/memory.db ~/backup/memory.db
+cp -r workspace/collections ~/backup/collections
 cp -r models/ ~/backup/models
 ```
 All `file_path` values in `documents` table are stored as **relative paths** (e.g. `collections/Lean6Sigma/`).
@@ -347,7 +347,7 @@ Python handles the **entire** pipeline end-to-end. No temp files, no JSON handof
 Node.js (ingest.ts)                    Python (ingest.py)
      │                                      │
      ├── exec(python ingest.py ...)         │
-     │   --db data/memory.db                ├── 1. Extract PDF text
+     │   --db workspace/memory.db           ├── 1. Extract PDF text
      │   --collection Lean6Sigma            ├── 2. Structural chunking
      │   --vec-ext vec0                     ├── 3. HTTP → embed_server.py (GPU)
      │                                      ├── 4. sqlite3.connect(memory.db)
@@ -737,6 +737,6 @@ npm run dev
 ```bash
 npm run test:ingest
 # Runs: cross-env NODE_OPTIONS=--max-old-space-size=4096 tsx src/test_local_ingest.ts
-# Test file: data/collections/Lean6Sigma/Certified Six Sigma Black Belt Handbook-ASQ (2009).pdf
+# Test file: workspace/collections/Lean6Sigma/Certified Six Sigma Black Belt Handbook-ASQ (2009).pdf
 # Expected: ~984 chunks, ~65s total, exit code 0
 ```

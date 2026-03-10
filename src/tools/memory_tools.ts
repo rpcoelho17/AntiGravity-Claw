@@ -147,16 +147,34 @@ export const getCurrentChannelTool: ToolDefinition = {
 export const listCollectionsTool: ToolDefinition = {
     spec: {
         name: "list_collections",
-        description: "Returns a list of all collections with their document counts.",
-        parameters: { type: "object", properties: {} }
+        description: "Returns a list of all collections in the database, including the names of documents inside them. It also indicates whether each collection is linked to the current channel.",
+        parameters: {
+            type: "object",
+            properties: {
+                interface: { type: "string", enum: ["tg", "owui"] }
+            },
+            required: ["interface"]
+        }
     },
-    execute: async () => {
+    execute: async (params: any) => {
+        const channel = getSetting(`active_channel:${params.interface}`) ?? "D";
+        const currentLinkage = getSetting(`channel_collections:${channel}`) || "";
+        const linkedCollections = currentLinkage.split(",").map(c => c.trim()).filter(Boolean);
+
         const rows = db.prepare(`
-            SELECT collection, COUNT(*) as doc_count 
+            SELECT collection, COUNT(*) as doc_count, group_concat(name, ', ') as document_names
             FROM documents 
             GROUP BY collection
-        `).all();
-        return JSON.stringify(rows);
+        `).all() as any[];
+
+        const results = rows.map(r => ({
+            collection: r.collection,
+            doc_count: r.doc_count,
+            documents: r.document_names,
+            is_linked_to_current_channel: linkedCollections.includes(r.collection)
+        }));
+
+        return JSON.stringify(results);
     }
 };
 
@@ -245,21 +263,31 @@ Returns per-collection findings which you must synthesize into a coherent answer
 export const proposeLinkCollectionTool: ToolDefinition = {
     spec: {
         name: "propose_link_collection",
-        description: "Propose linking a document collection (e.g., 'Bio_Specs', 'Work') to the current channel. This makes the collection's knowledge available for search and RAG in this specific channel.",
+        description: "Propose linking one or more document collections (e.g., 'Bio_Specs', 'Work') to the current channel. This makes the collections' knowledge available for search and RAG in this specific channel.",
         parameters: {
             type: "object",
             properties: {
-                collection: { type: "string", description: "The name of the collection to link." },
+                collections: { 
+                    type: "array", 
+                    items: { type: "string" },
+                    description: "The names of the collections to link."
+                },
                 interface: { type: "string", enum: ["tg", "owui"] }
             },
-            required: ["collection", "interface"]
+            required: ["collections", "interface"]
         }
     },
     execute: async (params: any) => {
         const channel = getSetting(`active_channel:${params.interface}`) ?? "D";
         const displayChannel = channel === "D" ? "Default" : channel;
-        const action = { tool: "execute_link_collection", params: { ...params, channel } };
-        const prompt = `You want me to link the "${params.collection}" collection to the "${displayChannel}" channel — is that correct? (yes / no)`;
+        
+        // Handle both new array format and fallback to legacy string format
+        const cols = params.collections || (params.collection ? [params.collection] : []);
+        
+        const action = { tool: "execute_link_collection", params: { collections: cols, channel } };
+        const colNames = cols.join(", ");
+        const plural = cols.length > 1 ? "collections" : "collection";
+        const prompt = `You want me to link the "${colNames}" ${plural} to the "${displayChannel}" channel — is that correct? (yes / no)`;
         savePendingConfirmation(params.interface, action, prompt);
         return prompt;
     }
@@ -268,21 +296,31 @@ export const proposeLinkCollectionTool: ToolDefinition = {
 export const proposeUnlinkCollectionTool: ToolDefinition = {
     spec: {
         name: "propose_unlink_collection",
-        description: "Propose removing the link between a document collection and the current channel. The collection and its data are NOT deleted, just removed from this channel's search scope.",
+        description: "Propose removing the link between one or more document collections and the current channel. The collections and their data are NOT deleted, just removed from this channel's search scope.",
         parameters: {
             type: "object",
             properties: {
-                collection: { type: "string", description: "The name of the collection to unlink." },
+                collections: { 
+                    type: "array", 
+                    items: { type: "string" },
+                    description: "The names of the collections to unlink."
+                },
                 interface: { type: "string", enum: ["tg", "owui"] }
             },
-            required: ["collection", "interface"]
+            required: ["collections", "interface"]
         }
     },
     execute: async (params: any) => {
         const channel = getSetting(`active_channel:${params.interface}`) ?? "D";
         const displayChannel = channel === "D" ? "Default" : channel;
-        const action = { tool: "execute_unlink_collection", params: { ...params, channel } };
-        const prompt = `You want me to unlink the "${params.collection}" collection from the "${displayChannel}" channel — is that correct? (yes / no)`;
+        
+        // Handle both new array format and fallback to legacy string format
+        const cols = params.collections || (params.collection ? [params.collection] : []);
+        
+        const action = { tool: "execute_unlink_collection", params: { collections: cols, channel } };
+        const colNames = cols.join(", ");
+        const plural = cols.length > 1 ? "collections" : "collection";
+        const prompt = `You want me to unlink the "${colNames}" ${plural} from the "${displayChannel}" channel — is that correct? (yes / no)`;
         savePendingConfirmation(params.interface, action, prompt);
         return prompt;
     }

@@ -137,34 +137,70 @@ You can upload PDF or Text files here to index them!
             return `Done — deleted the "${col}" collection and all its indexed chunks.`;
         }
         case "execute_link_collection": {
-            const col = params.collection as string;
+            const colsToProcess: string[] = params.collections ? (params.collections as string[]) : [params.collection as string];
             const ch = params.channel as string;
             const key = `channel_collections:${ch}`;
             const current = getSetting(key) || "";
             const collections = current.split(",").map(c => c.trim()).filter(Boolean);
             
-            if (collections.includes(col)) {
-                return `The "${col}" collection is already linked to the "${ch === 'D' ? 'Default' : ch}" channel.`;
+            const newlyLinked: string[] = [];
+            const alreadyLinked: string[] = [];
+
+            for (const col of colsToProcess) {
+                if (collections.includes(col)) {
+                    alreadyLinked.push(col);
+                } else {
+                    collections.push(col);
+                    newlyLinked.push(col);
+                }
             }
             
-            collections.push(col);
-            updateSetting(key, collections.join(","));
-            return `Done — linked the "${col}" collection to the "${ch === 'D' ? 'Default' : ch}" channel.`;
+            if (newlyLinked.length > 0) {
+                updateSetting(key, collections.join(","));
+            }
+
+            let msg = "";
+            if (newlyLinked.length > 0) {
+                msg += `Done — linked the "${newlyLinked.join(", ")}" collection(s) to the "${ch === 'D' ? 'Default' : ch}" channel. `;
+            }
+            if (alreadyLinked.length > 0) {
+                msg += `The "${alreadyLinked.join(", ")}" collection(s) were already linked.`;
+            }
+            return msg.trim() || `No collections were linked.`;
         }
         case "execute_unlink_collection": {
-            const col = params.collection as string;
+            const colsToProcess: string[] = params.collections ? (params.collections as string[]) : [params.collection as string];
             const ch = params.channel as string;
             const key = `channel_collections:${ch}`;
             const current = getSetting(key) || "";
             const collections = current.split(",").map(c => c.trim()).filter(Boolean);
             
-            if (!collections.includes(col)) {
-                return `The "${col}" collection is not linked to the "${ch === 'D' ? 'Default' : ch}" channel.`;
+            const unlinked: string[] = [];
+            const notLinked: string[] = [];
+
+            for (const col of colsToProcess) {
+                if (!collections.includes(col)) {
+                    notLinked.push(col);
+                } else {
+                    unlinked.push(col);
+                    // Remove from array
+                    const idx = collections.indexOf(col);
+                    if (idx > -1) collections.splice(idx, 1);
+                }
             }
             
-            const filtered = collections.filter(c => c !== col);
-            updateSetting(key, filtered.join(","));
-            return `Done — unlinked the "${col}" collection from the "${ch === 'D' ? 'Default' : ch}" channel.`;
+            if (unlinked.length > 0) {
+                updateSetting(key, collections.join(","));
+            }
+
+            let msg = "";
+            if (unlinked.length > 0) {
+                msg += `Done — unlinked the "${unlinked.join(", ")}" collection(s) from the "${ch === 'D' ? 'Default' : ch}" channel. `;
+            }
+            if (notLinked.length > 0) {
+                msg += `The "${notLinked.join(", ")}" collection(s) were not linked.`;
+            }
+            return msg.trim() || `No collections were unlinked.`;
         }
         default:
             return `Unknown action: ${toolName}`;

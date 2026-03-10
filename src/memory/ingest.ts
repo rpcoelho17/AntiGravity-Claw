@@ -9,7 +9,7 @@ export async function runIngestion(
     onProgress?: (msg: string) => void
 ): Promise<string> {
     const scriptPath = path.join(process.cwd(), 'scripts', 'ingest.py');
-    const dbPath = path.join(process.cwd(), 'data', 'memory.db');
+    const dbPath = path.join(process.cwd(), 'workspace', 'memory.db');
     const vecExtPath = path.join(process.cwd(), 'node_modules', 'sqlite-vec-windows-x64', 'vec0');
     
     let pythonExe = "python3";

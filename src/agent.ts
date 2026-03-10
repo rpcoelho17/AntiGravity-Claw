@@ -76,26 +76,23 @@ async function buildSystemPrompt(channel: string, userMessage: string): Promise<
         parts.push(`## Conversation Summary\n${summary}`);
     }
 
-    // 4. Semantic search — relevant old context (excluding verbatim window)
+    // 4. Semantic search — always run to retrieve RAG documents and old messages
     const msgLimit = getSettingNum("recent_messages_limit", 20);
     const recent = getRecentMessages(channel);
     const oldestVerbatimId = recent.length > 0 ? recent[0].id : Infinity;
-    const msgCount = getMessageCount(channel);
 
-    if (msgCount > msgLimit) {
-        try {
-            const searchResults = await search(userMessage, {
-                channel,
-                topK: 5,
-                beforeId: oldestVerbatimId
-            });
-            const searchContext = formatSearchContext(searchResults);
-            if (searchContext) {
-                parts.push(`## Relevant Context\n${searchContext}`);
-            }
-        } catch (err) {
-            console.warn("⚠️ Semantic search failed (non-blocking):", err);
+    try {
+        const searchResults = await search(userMessage, {
+            channel,
+            topK: getSettingNum("semantic_search_top_k", 5),
+            beforeId: oldestVerbatimId
+        });
+        const searchContext = formatSearchContext(searchResults);
+        if (searchContext) {
+            parts.push(`## Relevant Context\n${searchContext}`);
         }
+    } catch (err) {
+        console.warn("⚠️ Semantic search failed (non-blocking):", err);
     }
 
     // 5. Active channel indicator

@@ -13,7 +13,7 @@ import fs from "fs";
 // ── Workspace paths ─────────────────────────────────────────────────
 
 const WORKSPACE = process.env["ANTIGRAVITY_WORKSPACE"]
-    ?? path.join(process.cwd(), "data");
+    ?? path.join(process.cwd(), "workspace");
 
 export const DB_PATH = path.join(WORKSPACE, "memory.db");
 export const COLLECTIONS_PATH = path.join(WORKSPACE, "collections");

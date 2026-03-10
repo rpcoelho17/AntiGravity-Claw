@@ -2,7 +2,7 @@ import { Bot, InputFile, InlineKeyboard } from "grammy";
 import { config } from "./config.js";
 import { runAgentLoop } from "./agent.js";
 import { transcribeAudio, generateSpeech } from "./services/audio.js";
-import { getSetting } from "./memory/index.js";
+import { getSetting, savePendingConfirmation, getChannelCollections } from "./memory/index.js";
 import fs from "fs";
 import path from "path";
 
@@ -114,26 +114,25 @@ bot.on("message:document", async (ctx) => {
                 .text("❌ Cancel", "doc_cancel");
 
             // Store the buffer temporarily in memory or disk (using path for simplicity)
-            const tempDir = path.join(process.cwd(), "data", "temp_uploads");
+            const tempDir = path.join(process.cwd(), "workspace", "temp_uploads");
             fs.mkdirSync(tempDir, { recursive: true });
             const tempPath = path.join(tempDir, doc.file_name || "unnamed_doc");
             fs.writeFileSync(tempPath, buffer);
 
-            await ctx.reply(`❓ I've received \`${doc.file_name}\`. In which collection should I store it?`, {
-                parse_mode: "Markdown",
+            await ctx.reply(`❓ I've received "${doc.file_name}". In which collection should I store it?`, {
                 reply_markup: kb
             });
             return;
         }
 
         // Direct ingestion (when caption is provided)
-        const collectionDir = path.join(process.cwd(), "data", "collections", collection);
+        const collectionDir = path.join(process.cwd(), "workspace", "collections", collection);
         fs.mkdirSync(collectionDir, { recursive: true });
 
         const localPath = path.join(collectionDir, doc.file_name || "unnamed_doc");
         fs.writeFileSync(localPath, buffer);
 
-        await ctx.reply(`💾 _Received ${doc.file_name}. Ingesting into ${collection} collection..._`, { parse_mode: "Markdown" });
+        await ctx.reply(`💾 Received "${doc.file_name}". Ingesting into "${collection}" collection...`);
 
         // Trigger ingestion asynchronously with progress updates
         const { runIngestion } = await import("./memory/index.js");
@@ -148,10 +147,25 @@ bot.on("message:document", async (ctx) => {
 
         runIngestion(localPath, collection, onProgress).then(async (result) => {
             console.log(`✅ Ingestion result: ${result}`);
-            await ctx.reply(`✅ *Ingestion complete:* \`${doc.file_name}\`\n\nSuccessfully indexed into the *${collection}* collection.`, { parse_mode: "Markdown" });
+            const channel = getSetting("active_channel:tg") ?? "D";
+            const linkedCollections = getChannelCollections(channel);
 
-            const llmResponse = await runAgentLoop(`I have uploaded a document named ${doc.file_name}. It has been ingested into the ${collection} collection.`);
-            await ctx.reply(llmResponse, { parse_mode: "Markdown" });
+            if (!linkedCollections.includes(collection)) {
+                savePendingConfirmation(
+                    "tg",
+                    { tool: "execute_link_collection", params: { channel, collection } },
+                    `Would you like to link the collection '${collection}' to this channel?`
+                );
+                await ctx.reply(`✅ Ingestion complete: "${doc.file_name}"\n\nSuccessfully indexed into the "${collection}" collection.\n\n❓ Would you like to link the collection '${collection}' to this channel?`);
+            } else {
+                await ctx.reply(`✅ Ingestion complete: "${doc.file_name}"\n\nSuccessfully indexed into the "${collection}" collection.`);
+                const llmResponse = await runAgentLoop(`I have uploaded a document named ${doc.file_name}. It has been ingested into the ${collection} collection.`);
+                try {
+                    await ctx.reply(llmResponse, { parse_mode: "Markdown" });
+                } catch {
+                    await ctx.reply(llmResponse);
+                }
+            }
         }).catch(async (err) => {
             console.error("❌ Ingestion error:", err);
             await ctx.reply(`❌ Ingestion failed for \`${doc.file_name}\`: ${err.message}`);
@@ -179,20 +193,20 @@ bot.on("callback_query:data", async (ctx) => {
         await ctx.answerCallbackQuery(`Ingesting into ${collection}...`);
 
         try {
-            const tempDir = path.join(process.cwd(), "data", "temp_uploads");
+            const tempDir = path.join(process.cwd(), "workspace", "temp_uploads");
             const tempPath = path.join(tempDir, fileName);
 
             if (!fs.existsSync(tempPath)) {
                 throw new Error("Temporary file not found. Please try uploading again.");
             }
 
-            const collectionDir = path.join(process.cwd(), "data", "collections", collection);
+            const collectionDir = path.join(process.cwd(), "workspace", "collections", collection);
             fs.mkdirSync(collectionDir, { recursive: true });
 
             const finalPath = path.join(collectionDir, fileName);
             fs.renameSync(tempPath, finalPath);
 
-            await ctx.editMessageText(`💾 _Ingesting ${fileName} into ${collection} collection..._`, { parse_mode: "Markdown" });
+            await ctx.editMessageText(`💾 Ingesting "${fileName}" into "${collection}" collection...`);
 
             const { runIngestion } = await import("./memory/index.js");
             
@@ -206,10 +220,25 @@ bot.on("callback_query:data", async (ctx) => {
 
             runIngestion(finalPath, collection, onProgress).then(async (result) => {
                 console.log(`✅ Ingestion result: ${result}`);
-                await ctx.reply(`✅ *Ingestion complete:* \`${fileName}\`\n\nSuccessfully indexed into the *${collection}* collection.`, { parse_mode: "Markdown" });
+                const channel = getSetting("active_channel:tg") ?? "D";
+                const linkedCollections = getChannelCollections(channel);
 
-                const llmResponse = await runAgentLoop(`I have uploaded a document named ${fileName}. It has been ingested into the ${collection} collection.`);
-                await ctx.reply(llmResponse, { parse_mode: "Markdown" });
+                if (!linkedCollections.includes(collection)) {
+                    savePendingConfirmation(
+                        "tg",
+                        { tool: "execute_link_collection", params: { channel, collection } },
+                        `Would you like to link the collection '${collection}' to this channel?`
+                    );
+                    await ctx.reply(`✅ Ingestion complete: "${fileName}"\n\nSuccessfully indexed into the "${collection}" collection.\n\n❓ Would you like to link the collection '${collection}' to this channel?`);
+                } else {
+                    await ctx.reply(`✅ Ingestion complete: "${fileName}"\n\nSuccessfully indexed into the "${collection}" collection.`);
+                    const llmResponse = await runAgentLoop(`I have uploaded a document named ${fileName}. It has been ingested into the ${collection} collection.`);
+                    try {
+                        await ctx.reply(llmResponse, { parse_mode: "Markdown" });
+                    } catch {
+                        await ctx.reply(llmResponse);
+                    }
+                }
             }).catch(async (err) => {
                 console.error("❌ Ingestion error:", err);
                 await ctx.reply(`❌ Ingestion failed for \`${fileName}\`: ${err.message}`);

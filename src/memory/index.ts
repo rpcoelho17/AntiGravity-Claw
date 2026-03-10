@@ -4,7 +4,7 @@
  * All memory module exports go through here.
  */
 
-export { db, getSetting, getSettingNum, updateSetting, EMBEDDING_DIM, MEMORY_MD_PATH, COLLECTIONS_PATH } from "./db.js";
+export { db, getSetting, getSettingNum, updateSetting, getChannelCollections, EMBEDDING_DIM, MEMORY_MD_PATH, COLLECTIONS_PATH } from "./db.js";
 export { embed, embedBatch, embeddingToBuffer } from "./embed.js";
 export {
     storeMessage,

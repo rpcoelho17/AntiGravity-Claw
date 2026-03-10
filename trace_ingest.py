@@ -10,7 +10,7 @@ from docx import Document as DocxDocument
 from bs4 import BeautifulSoup
 
 print("STEP 2: Starting extraction", file=sys.stderr, flush=True)
-file_path = "D:/FILES/Code/AntiGravityClaw/data/collections/Articles/Chain_of_Draft.pdf"
+file_path = "D:/FILES/Code/AntiGravityClaw/workspace/collections/Articles/Chain_of_Draft.pdf"
 with open(file_path, "rb") as f:
     reader = pypdf.PdfReader(f)
     text = ""
