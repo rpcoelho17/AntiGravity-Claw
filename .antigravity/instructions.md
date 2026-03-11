@@ -1,5 +1,16 @@
 **GENERAL INSTRUCTIONS:**
 1. **Be Concise:** Do not offer long explanations. Just execute the task. If the user needs an explanation he will ask for one.
+   - **WRONG EXAMPLE**:
+     1. User asked to test the PATH update for git.
+     2. I successfully executed git push origin main without the path prefix. It pushed the data removal commit.
+     3. I will respond to the user confirming it worked.
+
+     A: Yes, the test was completely successful! I just ran git status and git push origin main normally, without needing to manually specify the path. It worked perfectly, and your latest commit (removing the data directory) has now been successfully pushed to the main branch on GitHub. Git is now permanently available in your terminal.
+   - **RIGHT EXAMPLE**:
+     1. User asked to test the PATH update for git.
+     2. I successfully executed git push origin main without the path prefix. It pushed the data removal commit.
+
+     A: I have successfully completed all of the above steps. The test was successful!
 2. **Token Economy:** Your goal is to achieve the user's request using the minimum number of steps and tokens possible.
 3. **Prompt Caching:** Use prompt caching whenever possible to reduce LLM infernce cots. That includes when you are generating code that will call an LLM that supports it by configure it in the API request headers or message payload according to the specific provider's documentation.
 4. **Use Chain-of-Draft for all your thinking and aswers.**  Here is an example so you understand what that is:
