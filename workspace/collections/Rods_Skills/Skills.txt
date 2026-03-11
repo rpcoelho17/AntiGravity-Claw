@@ -1,0 +1,454 @@
+Filename: 2022 Eng-PROJ-PROC-QUAL_RCOELHO_.docx 
+
+Rodrigo P. Coelho  
+Mechanical Eng., MBA-Finance, Certified Proj.  Manager (PMI), Lean Six Sigma Black Belt, Post-Grad Data Science/Switzerland 
+
+SUMMARY 
+A goal-oriented and  
+problem-solving Manager with over 9 years in Project and Supply Chain management. International experience in SAP, Strategic Planning, Total Quality Management, Procurement and Inventory Control. Analyzes data exceptionally well, developing strategies to improve methodologies and achieve organizational objectives.  Adapts quickly to unique projects and situations, drawing on a wide-ranging knowledge base to institute highly successful plans.  A cost-conscious creative manager who streamlines systems to grow company operations and achieve results. 
+
+EXPERIENCE
+Dell Digital
+Belo Horizonte - Remote worker 
+Senior Data Scientist 
+(07/2022 – 09/2023) 
+Development of a dashboard that automates the Problem Solving and Analysis Methodology, capable of discovering the root cause of problem in real-time. 
+The framework has been successfully used in the analysis of various control items (KPIs). 
+Use of Artificial Intelligence combined with Lean Six Sigma and Total Quality Techniques to achieve productivity gains of 10x or more in process optimizations . 
+Used LLMs to automatically classify user complaints and create Paretos of issues to be resolved. 
+The classified customer feedback was automatically dispatched for the appropriate teams for corrective action. 
+Fine-tuned LLMs on Dell customer service unstructured data to create customer support chat-bot. 
+The classified customer feedback was automatically dispatched for the appropriate teams for corrective action. 
+Methodology can be used to monitor any KPI and receive input from structured and unstructured data. 
+Created Key KPIs for e-commerce platform and used the above framework to provide insights to VP level stakeholders.  One of those KPIs found the feedback surveys for login errors. This is a hard task because login in a website is a background process.  
+Developed Bot Attack Detection Framework which analyses 11 million records on average in real time and generates a list of possible Bot attacks. The methodology used was evaluated and submitted for patent by Dell Legal. 
+Major improvements in the root cause analysis capabilities of 5 e-commerce dashboards. 
+Used Machine learning and big data stored in Hadoop to analyze and find root causes of several  
+Dell issues. 
+Responsible for improving customer satisfaction metrics for e-service and e-commerce. 
+White paper with upgrade recommendations for Dell's analysis technologies (Spark, H2O, MS Fabric,  
+H2O wave, Knime). 
+ 
+Enterprise Solutions 
+Belo Horizonte 
+Consultant 
+(11/2018 – 07/2022) 
+Consultant in Project Management, Risk Management, Lean Process Improvements, Cost Reductions and Data Mining. 
+Consulting Project to develop Neural Networks to understand product descriptions scraped from websites and compare the client's price with the competitors' for a company in São Paulo. 
+Doing research on using Machine Learning to do Time-Series predictions such as forecasts, stock prices, material requirements and other applications. 
+Also working on improving existing Auto Machine Learning algorithms for hyper-parameter tuning. 
+
+Università Della Svizzera Italiana
+Lugano, Switzerlanfd 
+Post-Graduation in Computer Science.  Artificial Intelligence track.   
+(02/2017-09/2018) 
+
+Voitto treinamento e Desenvolvimento/Senac
+Belo Horizonte, Brazil 
+Lean Six Sigma Black Belt Consultant 
+(08/14 – 12/16) 
+Consultant/Instructor Lean Six Sigma Black belt and Project Risk Management courses.
+
+Anglo American – Mining Company.
+Belo Horizonte, Brazil
+Project Management Consultant – Jacaré Nickel Plant Project (U$ 3 Billion) (07/10 - 04/14)
+Responsible for coordinating and integrating the managers of Geology, Mining, SSD, Process, Engineering, GSA, Procurement, Project Management (my role), and Services.
+Responsible for implementing the first PMI project at Anglo-American Brazil.
+Coordinated the development of the 2013 project Budget acquiring over U$64 Million in funds.
+Participated in Mining Economics analysis to determine optimal plant size and implementation strategy.
+Responsible for all Project Management and Project Services related topics.
+Responsible for the delivery of the Project Charter, Scope Management Plan, Stakeholder Management Plan, Business Case, Project Execution Plan, WBS, Communications Plan, WBS Dictionary, Basis of Estimate, and CAPEX.
+Developed Monte Carlo simulations for the CAPEX, Schedule, and Risk to determine project contingency budget.
+Responsible for the delivery of the Conceptual and Pre-Feasibility Study Reports.
+Contracted Risk Analysis SME and established risk monitoring sessions.
+Monitored contracted Logistics and Energy study quality with engineering.
+Managed direct reports responsible for Supply Chain, Document Control, Budget.
+Implemented ProjectWise document management system with a cost of U$100.000.
+Scheduled brainstorming sessions for CAPEX reduction with a U$212 Million reduction.
+Responsible for monitoring project expenditures against the budget.
+Managed EPCM functions (contractors) related to Project Management and Project Services area.
+Managed contracts with third party suppliers (SSD studies and deliverables).
+
+Project Manager Consultant – Electric furnace Project ( U$300 Million) PMI Consultant for the Upgrade of Barro Alto’s Electric Furnace.
+Responsible for the same deliverables as Jacaré project and the Quality Management Plan.
+Acquired full funds to complete the project in mid-November/13.
+
+Project Manager for the Slag Treatment Project (U$30 Million) and Briquetting Plant Project (U$28 Million). Coordinating the managers of Process, Engineering, SSD, and Services.
+ 
+
+PepsiCo, Inc. (2004 – 2010)
+Senior Supply Manager / Process Improvement Engineer
+Naked Juice: 
+Los Angeles, California 
+07/2008 - 06/2010
+- Responsible for procurement and inventory management of all packaging materials and ingredients for the CI plant (over 120 items, valued at U$28 Million with 45% monthly turnover).
+- Developed cost reduction strategies based on Logistics Optimization and Negotiation with suppliers. Saved U$250,000/year in transportation by negotiating with the supplier the opening of a warehouse near the Naked Juice factory.
+- Consequently, also reducing bottle inventory from 5 days-supply to 1-day supply.
+- Project Manager for the introduction of the new PET recyclable Naked Juice bottle in the U.S market.
+- Guaranteed resource availability for product launch and established issue resolution and progress meetings.
+- Managed and coached direct reports responsible for packaging, ingredient materials, and finished goods planning.
+- Established material management policies and monitored and controlled their execution affecting local warehouse, 3rd party warehouse, and inventory held at suppliers.
+- Created and communicated annual operating plans for materials as well as weekly forecast comparing past usages and future demands.
+- Established KPIs and SOPs for suppliers and the Materials Planning Team.
+- Led supply strategy for CI, including inventory policy, sourcing strategy, and material forecasting.
+- Resource capacity analysis involving mixing tanks and production lines.
+SAP  MRP Business Lead Project Manager
+Project One Up 
+Chicago, Illinois 
+02/2007 - 07/2008 
+-Project Manager for SAP/MRP implementation in 5 plants using PMI framework. 
+-Coordinated UAT for MRP/P2R/STO processes managing 12 people. 
+-Developed Project Schedule including data cleansing, uploading, checking, script testing and training. 
+-Developed Risk Mitigation strategies and successfully deployed SAP solution on Time and on Budget. 
+SAP Tactical Capacity Planning Project Manager,  
+Project One Up,  
+Chicago, Illinois 
+01/2006 - 02/2007 
+Responsible for the delivery of over 30 TCP SAP reports working with 2 U.S (local) and 3  
+-international (India) resources. 
+-Collected requirements from stakeholders and developed Functional Design Specifications. 
+-Reduced the number of Tropicana required reports from 90 to about 30 by exploring BW unknown functionality. 
+-Responsible for the development and delivery of Tropicana Business Scenarios. 
+
+Production Planning Systems Project Manager, 
+Tropicana Products 
+Bradenton, Florida 
+03/2004 - 01/2006   
+-Project Manager for the implementation of a Linear Optimization Engine to optimize 18 production linesusing PMI methodology. 
+-Reduction of change-overs was the key objective obtained. 
+-Developed Business Case and successfully acquired funding for the U$410,000 Finished Goods Scheduling project. 
+-Managed a team composed of 2 outside consultants (Aspentech) and 7 PepsiCo resources. 
+-Developed project implementation plan and tracked deliverables using Microsoft Project.   
+-Fleet size usage analysis and cost reductions.  
+-The DMAIC method was used to show that it was possible to reduce the Dedicated fleet by 25 trailers. Expected savings reached $540,000/yr. 
+-Optimization of product placement in warehouses using Red Prairie zoning and ABC sales analysis. 
+-Identified the root causes of issues and implemented processes to eliminate and avoid reoccurrence. 
+-Developed 5S/Total Quality Control(TQC) implementation strategy for the Tropicana-Bradenton plant. 
+
+Stema Pedax Brasil - Steel Bending Equipment Manufacturer 
+Belo Horizonte, Brazil 
+Project Manager, Production Supervisor, and Purchaser 
+02/2001 - 12/2001 
+Directed multiple projects concurrently, delivering on time and on budget. 
+Responsible for supplier selection.  
+Negotiated prices and purchasing of standard/custom-made parts.  
+Coordinated management of work done by suppliers and of in-house assembly process.  
+Transformed set of mechanical drawings into actual machines, finding suppliers in Brazil for parts, sub-assemblies, and automation controls meeting company needs in regards to quality, price, and delivery targets.  Ran construction of three machines concurrently. Total project cost of U$1.2 Million. 
+Established entire supply chain of company, composed of more than 70 suppliers.  
+Oversaw team of 7 people assembling equipment into producing high-quality, reliable products.   
+
+Rheem Brasil
+Belo Horizonte, Brazil:
+Operations Manager / Systems Analyst
+01/95 – 06/96 & 12/97 - 01/2001
+Held responsibility for planning, management, and support of a network of dealers. 
+Selected product mix to be imported by analyzing historical sales data. 
+Coordinated cash flows by monitoring cash reserves, accounts payable, and accounts receivables. 
+Hired engineers for warranty and sales departments. Monitored inventory levels and calculated repurchase dates and amounts.
+Followed up on problems in the warranty department by evaluating customer service reports and creating a knowledge base, dispatching adequate personnel to solve clients' problems, and overseeing solutions. 
+Eliminated recurring errors by developing standard operational procedures. Managed 2 engineers.
+Increased sales from R$1.04 Million/yr. to R$3.60 Million/yr. by reengineering, automating, and integrating several processes through software development.
+Selected for the ICP training program: Engineering Trainee at the International Comfort Products (ICP) Factory. 
+-Helped in the selection and development of the line of products that should be sold in Latin America. 
+-Trainee in Shipping, Sales, Quality, Inventory/warehouse, Testing, and Warranty Departments.
+
+Stema Pedax Brasil - Steel Bending Equipment Manufacturer
+Belo Horizonte, Brazil
+Project Manager, Production Supervisor, and Purchaser
+02/2001 - 12/2001
+Directed multiple projects concurrently, delivering on time and on budget.
+Responsible for supplier selection.
+Negotiated prices and purchasing of standard/custom-made parts.
+Coordinated management of work done by suppliers and of in-house assembly process.
+Transformed set of mechanical drawings into actual machines, finding suppliers in Brazil for parts, sub-assemblies, and automation controls meeting company needs in regards to quality, price, and delivery targets.
+Ran construction of three machines concurrently. Total project cost of U$1.2 Million.
+Established the entire supply chain of the company, composed of more than 70 suppliers.
+Oversaw a team of 7 people assembling equipment into producing high-quality, reliable products.
+
+Cia E Cervejaria Brahma
+Juatuba, Brazil:
+Operations and Supply Chain Manager
+07/96 - 7/97.
+Oversaw supply chain and logistics of raw materials.
+Key player in Total Quality Management implementation.
+Created SOP manual for the materials team, including SIPOC, Process Maps, KPI setting, and Kaizen projects.
+Held responsibility for the factory’s materials requirement planning (MRP) under just-in-time delivery system.
+Reduced material loss by 12% through the use of Kaizen and Quality Circles.
+Developed software to calculate optimal inventory amounts, control MRP, and supply chain.
+Coordinated quality, purchase, and delivery of $15,000,000 inventory with 50% monthly turnover.
+Developed software to monitor and control Brahma’s 5S program.
+One of the quality auditors of the 5S program for the company, consisting of sort, straighten, sweep, schedule, and sustain.
+
+Zargon Computação
+Belo Horizonte, Brazil:
+Systems Analyst and Software Instructor, 
+8/95 - 12/97.
+Taught Visual Basic, Microsoft Access, Excel, Word, Delphi, and HTML.
+Developed AutoCAD training course, including training materials and course content.
+Consultant on Microsoft Access, Visual Basic, and Excel.
+Earned placement on Açominas project as systems analyst/developer.
+Reduced purchasing costs by developing software to integrate company with over 200 suppliers using Visual Basic 5.0 and SQL Server 6.5.
+
+EDUCATION 
+Post-Graduation in Computer Science 
+Università Della Svizzera Italiana, Switzerland 
+02/17 - 09/18 
+
+Lean Six Sigma Black Belt 
+Villanova University, United States 
+05/10 - 08/10 
+
+MBA, Finance, GPA: 3.84/4.00 
+University of Tampa, United States 
+02/02 - 12/03 
+
+B.S. Mec. Engineering, Minor in Op. Research 
+Universidade Federal de Minas Gerais, Brazil 
+02/89 - 06/1995
+ 
+
+CERTIFICATIONS 
+PMI Certified Project Management Professional (PMP), 2010-2019
+APICS CPIM Execution and Control, 2004
+Lean Six Sigma Black Belt, 2010
+APICS CPIM Detailed Scheduling and Planning, 2004
+
+
+PROFESSIONAL DEVELOPMENT 
+R / Python / MATLAB / Knime – 2017/18  
+Planning Agile Projects, 2016 
+SAP Materials Management (MM)/Procurement Academy, 2014 
+MCA Leadership Development Program, 2011 
+PMP Exam Prep Boot Camp, 2010 
+SAP SCM230 Supply Network Planning (SNP), 2005 
+Borland’s In Search of Excellent Requirements, 2004 
+Project Management, 2004  
+Microsoft Visual Basic, 1996 
+Borland Delphi, 1996 
+Advanced Microsoft Access, 1996 
+Honeywell Excel 5000 PLC Controllers, 1995  
+
+TECHNICAL SKILLS 
+Risk Analysis, Monte Carlo Simulation, MS Project, DMAIC Method, PDCA, Six Sigma, Python, R, Knime, MS Access, MATLAB, Excel, Word, PowerPoint, SAP, Caliber, MRP, SQL, Visual Basic, Root Cause Analysis, Statistics, Linear Programming, VBA.
+
+LANGUAGES 
+Fluent in English and Portuguese.   
+European Union citizen (Italy). 
+UK National Insurance Number issued in 2010.
+
+
+
+Filename: 2023 ROD COELHO-Eng IT 2.docx 
+
+Rodrigo P. Coelho  
+Data Science Post Graduate, MBA-Finance, Certified Proj. Manager (PMI), Lean Six Sigma Black Belt 
+
+Address:
+Rua Alvarenga Peixoto, 444/502   
+Belo Horizonte  
+Brazil
+   
+Italian/Brazilian Citizen   
+e-mail: rodrigopcoelho@hotmail.com 
+Skype: rodrigopcoelho  
+Tels: +55 31 3335-8597 / 31 98408-5550 
+
+SUMMARY 
+A  goal-oriented and  problem-solving Manager with international experience in IT, Artificial Intelligence, project management, supply chain management, and Total Quality Control.  Analyzes data exceptionally well, developing strategies that combine Artificial Intelligence with Lean Six Sigma to achieve tremendous gains in productivity and reach organizational objectives.  Adapts quickly, drawing on a wide-ranging knowledge base to institute highly successful plans.  A cost-conscious creative professional who streamlines systems to grow company operations. 
+
+EXPERIENCE 
+Dell Digital
+Belo Horizonte - Remote worker 
+Senior Data Scientist 
+(07/2022 – 09/2023) 
+Development of a dashboard that automates the Problem Solving and Analysis Methodology, capable of discovering the root cause of problem in real-time. 
+The framework has been successfully used in the analysis of various control items (KPIs). 
+Use of Artificial Intelligence combined with Lean Six Sigma and Total Quality Techniques to achieve productivity gains of 10x or more in process optimizations . 
+Used LLMs to automatically classify user complaints and create Paretos of issues to be resolved. 
+The classified customer feedback was automatically dispatched for the appropriate teams for corrective action. 
+Fine-tuned LLMs on Dell customer service unstructured data to create customer support chat-bot. 
+The classified customer feedback was automatically dispatched for the appropriate teams for corrective action. 
+Methodology can be used to monitor any KPI and receive input from structured and unstructured data. 
+Created Key KPIs for e-commerce platform and used the above framework to provide insights to VP level stakeholders.  One of those KPIs found the feedback surveys for login errors. This is a hard task because login in a website is a background process.  
+Developed Bot Attack Detection Framework which analyses 11 million records on average in real time and generates a list of possible Bot attacks. The methodology used was evaluated and submitted for patent by Dell Legal. 
+Major improvements in the root cause analysis capabilities of 5 e-commerce dashboards. 
+Used Machine learning and big data stored in Hadoop to analyze and find root causes of several  
+Dell issues. 
+Responsible for improving customer satisfaction metrics for e-service and e-commerce. 
+White paper with upgrade recommendations for Dell's analysis technologies (Spark, H2O, MS Fabric,  
+H2O wave, Knime). 
+
+Enterprise Solutions
+Belo Horizonte 
+Consultant 
+(11/2018 – 07/2022) 
+Consultant in Project Management, Data Mining, Risk Management, Lean Process Improvements and Cost Reductions. 
+Consulting Project to develop Neural Networks to understand product descriptions scraped from websites and compare the client's price with the competitors' for a company in São Paulo. 
+Developed Auto Machine Learning algorithms for hyper-parameter tuning. 
+Research on using Machine Learning to do Time-Series predictions such as forecasts, stock prices, material requirements and other applications. 
+
+Università Della Svizzera Italiana
+Lugano, Switzerlanfd 
+Post-Graduation in Computer Science.  Artificial Intelligence track.   
+(02/2017-09/2018) 
+
+Voitto treinamento e Desenvolvimento/Senac
+Belo Horizonte, Brazil 
+Lean Six Sigma Black Belt Consultant 
+(08/14 – 12/16) 
+Consultant/Instructor Lean Six Sigma Black belt and Project Risk Management courses.
+
+Anglo American – Mining Company
+Belo Horizonte, Brazil 
+Project Manager – Jacaré Nickel Plant Project 
+(07/10 - 04/14) 
+Responsible for implementing the first PMI project at Anglo-American Brazil. 
+Responsible for coordinating and integrating the managers of Geology, Mining, SSD, Process, Engineering, GSA, Procurement, Project Management (my role) and Services. 
+Developed Monte Carlo simulations for the CAPEX, Schedule and Risk to determine project contingency budget.  
+Implemented ProjectWise document management system with a cost of U$100.000. 
+Coordinated the development of the 2013 project Budget acquiring over U$64 Million in funds. 
+Participated in Mining Economics analysis to determine optimal plant size and implementation strategy. 
+Responsible for the delivery of PMI documentation including the Project Charter, Proj. Execution Plan and CAPEX. 
+Managed direct reports responsible for Supply Chain, Document Control and Budget. 
+Responsible for monitoring project expenditures against the budget. 
+
+Tropicana Products – Project one up – PepsiCo SAP implementation 
+City of Industry – USA  
+SAP - MRP Leader / Process Improvement Engineer  
+(02/07 – 06/10) 
+Successful SAP MRP implementations in 5 plants from 3 different PepsiCo divisions.   
+Managed SAP MRP UAT Testing including hundreds of cases and about 12 testers. 
+Developed Line Utilization and Run Strategy Software Decision Support tool using Excel and VBA. 
+Collected master data and developed specifications for Tropicana business scenarios and MRP test cases. 
+Created City of Industry Line Scheduling Planning software. 
+Key Player in integrated scenario mapping, discussions and simulations. 
+Taught MRP / P2R / STO classes to over 80 users from all QTG divisions. 
+Coordinated the development of SAP MRP Training manuals and documentation. 
+Led Today/Tomorrow MRP Gap Analysis meetings with all three businesses and followed up on open issues. 
+Developed Inventory control policy. 
+Developed ABC Material Cost Analysis decision support software to understand which materials we needed to track more closely. 
+Eliminated manual bottle ordering process by leveraging misunderstood SAP capabilities. 
+Developed cost reduction strategies based on Logistics Optimization and Negotiation with suppliers.  Saved U$250,000/year in transportation by negotiating with supplier the opening of a warehouse near the Naked Juice factory.  Consequently, also reducing bottle inventory from 5 days-supply to 1-day supply. 
+Implemented an SOP to Track inventory issues, determine root cause and assign owner for resolution.  
+
+Pepsico – Project one up – PepsiCo SAP blueprinting  
+Chicago - USA 
+Tactical Capacity Planning Project Manager  
+(01/06 – 02/07) 
+Owned, developed, and presented Tropicana related Business Scenarios to the Subject Matter Experts. 
+Managed the collection of master data such as line rates, costs, calendars and other data for all TCP conversions, 82 plants in total.  Participated in data collection sessions with business leadership.  Assembled final data tables for upload into new systems and checked data for consistency using MS Access. 
+Developed VBA application to check the consistency of primary keys of legacy data being uploaded into SAP.  
+Managed onshore and offshore teams to improve reports, business scenarios, and unit test scripts. 
+Created Point of View papers regarding the modeling of Tropicana lines and warehouse storage. 
+Actively participated in challenge sessions, Blueprint Review, and LSME sessions. 
+Gathered Requirements during Blueprint Phase through SME sessions. 
+Developed functional design specification and managed international resources for the development and implementation of 22 TCP reports.   Made recommendations to leverage existing BW functionality and significantly improved their quality by making them dynamic.  
+Owned the development of a standardized naming convention for all TCP master data that would create efficient ways of searching for information and linking tables. 
+Developed Process diagrams for the New Product introduction and Production Advice integrated scenario. 
+Identified Gaps, recommended and implemented design resolutions on open process issues. 
+Leveraged past experiences to educate team on Tropicana processes and supply network design. 
+
+Pepsico - Tropicana Products  
+Bradenton - USA 
+Business Systems Project Manager  
+(3/04 – 01/06) 
+Project Manager for the PP FG Scheduling Tool replacement project with expected annual savings of $410,000.   
+Created project business case and acquired $250,000 from PepsiCo corporate to execute the project. 
+Developed PP project implementation plan and tracked deliverables against plan using MS Project. 
+Created all project documentation including Capital Budget, Project Charter, As-Is and To-Be process maps, Functional Design Specification, Statement of Work and others according to PMI methodology. 
+Lead issue resolution meetings and managed supplier task delivery dates and accountability.  
+Mapped legacy warehouse management system functionality to be used in Red Prairie implementation. 
+Analyzed and made recommendations regarding Red Prairie zones set up for optimized product placement. 
+Developed software program to test accuracy of new interfaces against legacy interfaces. 
+Created a TQM action plan to implement 5S in the Bradenton plant.   
+Root-Cause Analysis study on rail non-compliance issues.  Included development of Ishikawa diagram and Pareto of main causes. 
+Focus on Improvement Project on Dedicated Fleet Usage.  Found a $540,000 annual savings opportunity and developed recommendations and an action plan to capture those savings by removing 25 trailers from dedicated fleet.  The DMAIC method was used to analyze this problem. 
+Tropicana SME for Manufacturing Planning and Replenishment Planning. 
+
+Stema Pedax Brasil - Steel Bending Equipment Manufacturer 
+Belo Horizonte, Brazil 
+Project Manager, Production Supervisor, and Purchaser 
+(02/2001 - 12/2001)
+Directed multiple projects concurrently 
+, delivering on time and on budget.  Responsible for supplier selection.  Negotiated prices and purchasing of standard/custom-made parts.  Coordinated management of work done by suppliers and of in-house assembly process.  Transformed set of mechanical drawings into actual machines, finding suppliers in Brazil for parts, sub-assemblies, and automation controls meeting company needs in regards to quality, price, and delivery targets.  Ran construction of three machines concurrently.  Total project cost of U$1.2 Million. 
+Established entire supply chain of company, composed of more than 70 suppliers.  
+Oversaw team of 7 people assembling equipment into producing high-quality, reliable products.   
+
+Rheem Brasil 
+Belo Horizonte, Brazil 
+Operations Manager / Systems Analyst 
+(01/95 – 06/96 & 12/97 - 01/2001) 
+Held responsibility for planning, management, and support of a network of dealers.   
+Increased sales from R$1.04 Million/yr. to R$3.60 Million/yr. by developing software that automated and integrated most of the sales and inventory processes. Software selected the product mix to be imported by analyzing historical sales data, and  
+managed cash flows by monitoring cash reserves, accounts payable, and accounts receivables.  Monitored inventory levels and calculated repurchase dates and amounts.   
+Hired engineers for warranty and sales departments.   
+Followed up on problems in warranty department by evaluating customer service reports and creating a knowledge base, dispatching adequate personnel to solve client’s problem, and overseeing solution.   
+Eliminated reoccurring errors by developing standard operational procedures.  
+Managed 2 engineers.
+Selected for the ICP training program: 
+Engineering Trainee at the International Comfort Products (ICP) Factory 
+Help in the selection and development of the line of products that should be sold in Latin America. 
+Trainee in Shipping, Sales, Quality, Iventory/warhouse, Testing and Warranty Departments. 
+
+Cia E Cervejaria Brahma 
+Juatuba, Brazil   
+Supply Chain Manager,  07/96 - 7/97.  Oversaw supply chain and logistics of raw materials.  Developed software to monitor and control Brahma’s 5S program.  One of the quality auditors of the 5S program for the company, consisting of sort, straighten, sweep, schedule, and sustain. Key player in Total Quality Management implementation.   
+Created SOP manual for the materials team, including SIPOC, Process Maps, KPI setting, and  Kaizen projects.  Held responsibility for factory’s materials requirement planning (MRP) under just-in-time delivery system.  Reduced material loss by 12% through use of  
+Kaizen and Quality Circles.  Developed software to calculate optimal inventory amounts, control MRP, and supply chain.  Coordinated quality, purchase, and delivery of  
+$15,000,000 inventory with 50% monthly turnover.   
+
+Zargon Computação, Belo Horizonte, Brazil:   
+Systems Analyst and Software Instructor, 8/95 - 12/97.  
+Taught Visual Basic,  Microsoft Access, Excel, Word, Delphi, and HTML.   
+Developed AutoCAD training course, including training materials and course content.   
+Consultant on Microsoft Access, Visual Basic and Excel.  Earned placement on Açominas project as systems analyst/developer.  
+Reduced purchasing costs by developing software to integrate company with over 200 suppliers using Visual Basic and SQL Server.  
+
+EDUCATION 
+Post-Graduation in Data Science 
+Università Della Svizzera Italiana,  
+Switzerland 
+02/17 - 12/18 
+
+Lean Six Sigma Black Belt 
+Villanova University,  
+United States  
+05/10 - 08/10 
+
+MBA, Finance, GPA:3.84/4.00  
+University of Tampa, United States    
+02/02 - 12/03 
+B.S. Mec. Engineering, Minor in Op. Research 
+  
+Universidade Federal de Minas Gerais, Brazil 
+02/89- 06/1995 
+
+CERTIFICATIONS 
+PMI Certified Project Management Professional (PMP), 2010-2019 
+APICS CPIM Execution and Control, 2004 
+Lean Six Sigma Black Belt, 2010
+
+APICS CPIM Detailed Scheduling and Planning, 2004 
+PROFESSIONAL DEVELOPMENT 
+Planning Agile Projects, 2016 
+SAP Materials Management (MM)/Procurement Academy, 2014 
+MCA Leadership Development Program, 2011 
+PMP Exam Prep Boot Camp, 2010 
+SAP SCM230 Supply Network Planning (SNP), 2005 
+Borland’s In Search of Excellent Requirements, 2004 
+Project Management , 2004 
+Advanced Microsoft Access , 1996 
+
+TECHNICAL SKILLS 
+Python, R, Knime, Visual Basic, SQL, MATLAB, Machine Learning, MS Access, Excel, VBA, Word, PowerPoint, SAP, MRP, MS Project, Statistics, Six Sigma, Root Cause Analysis, DMAIC Method, PDCA, Risk Analysis, Caliber, Test Director. 
+
+LANGUAGES 
+Fluent in English and Portuguese.   
+European Union citizen (Italy). 
+UK National Insurance Number issued in 2010.
+
+
+
+
+
+
