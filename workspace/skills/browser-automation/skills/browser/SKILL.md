@@ -1,6 +1,6 @@
 ---
 name: browser
-description: Automate web browser interactions using natural language via CLI commands. Use when the user asks to browse websites, navigate web pages, extract data from websites, take screenshots, fill forms, click buttons, or interact with web applications. Supports remote Browserbase sessions with automatic CAPTCHA solving, anti-bot stealth mode, and residential proxies — ideal for scraping protected websites, bypassing bot detection, and interacting with JavaScript-heavy pages.
+description: (PRIMARY) The main browser agent for all web interactions. Controls local Chrome, bypasses bot detection, and handles modern JavaScript-heavy sites. Use this as your first choice for any web browsing, navigation, or interaction tasks.
 compatibility: "Requires the browse CLI (`npm install -g @browserbasehq/browse-cli`). Optional: set BROWSERBASE_API_KEY and BROWSERBASE_PROJECT_ID for remote Browserbase sessions; falls back to local Chrome otherwise."
 license: MIT
 allowed-tools: Bash
