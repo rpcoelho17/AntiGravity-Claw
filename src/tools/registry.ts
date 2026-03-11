@@ -47,14 +47,16 @@ export async function executeTool(
 
 import { getCurrentTimeTool } from "./get-current-time.js";
 import { webSearchTool } from "./web_search.js";
-import { readFileTool, writeFileTool, listFilesTool } from "./file_tools.js";
+import { writeFileTool, readFileTool, listFilesTool } from "./file_tools.js";
 import { allMemoryTools } from "./memory_tools.js";
+import { execCommandTool } from "./exec_tool.js";
 
 registerTool(getCurrentTimeTool);
 registerTool(webSearchTool);
 registerTool(readFileTool);
 registerTool(writeFileTool);
 registerTool(listFilesTool);
+registerTool(execCommandTool);
 
 for (const tool of allMemoryTools) {
     registerTool(tool);

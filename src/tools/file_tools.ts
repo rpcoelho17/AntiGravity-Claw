@@ -22,25 +22,38 @@ function safePath(userPath: string): string {
     const channel = getSetting("active_channel:tg") ?? "D";
     const channelRoot = getSetting(`channel_root:${channel}`);
 
-    if (!channelRoot) {
+    // Skills are globally available regardless of project linking
+    const normalizedPath = userPath.replace(/\\/g, "/");
+    const isGlobalSkill = normalizedPath === "workspace/skills" || normalizedPath.startsWith("workspace/skills/");
+
+    if (!channelRoot && !isGlobalSkill) {
         throw new Error(
-            `This channel ("${channel === "D" ? "Default" : channel}") is not linked to a project. ` +
-            `Use "link this channel to [folder]" to enable file tools.`
+            `Access Denied: The "${channel === "D" ? "Default" : channel}" channel is not linked to a project folder so you cannot access the general file system. However, the 'workspace/skills/' directory is GLOBALLY accessible. If you simply need to read a skill, do NOT ask the user to link a project; just execute read_file directly on the 'workspace/skills/[skill]/SKILL.md' path.`
         );
     }
 
-    // Always resolve relative to BASE_PROJECT_PATH/channelRoot
-    const targetRoot = path.resolve(BASE_PROJECT_PATH, channelRoot);
+    const effectiveRoot = isGlobalSkill ? "." : (channelRoot || "");
+    const targetRoot = path.resolve(BASE_PROJECT_PATH, effectiveRoot);
 
-    // Ensure the channel folder itself is still under BASE_PROJECT_PATH
     if (!targetRoot.startsWith(BASE_PROJECT_PATH)) {
         throw new Error("Security violation: Channel root is outside the base project directory.");
     }
 
-    const resolved = path.resolve(targetRoot, userPath);
+    const resolved = path.resolve(BASE_PROJECT_PATH, userPath);
+    console.log(`[DEBUG safePath] BASE_PROJECT_PATH = ${BASE_PROJECT_PATH}`);
+    console.log(`[DEBUG safePath] userPath = ${userPath}`);
+    console.log(`[DEBUG safePath] resolved = ${resolved}`);
 
     // Ensure the final file path is still under the specifically selected channelRoot
-    if (!resolved.startsWith(targetRoot)) {
+    // If it's a global skill, it only needs to be under BASE_PROJECT_PATH/workspace/skills
+    const requiredPrefix = isGlobalSkill 
+        ? path.resolve(BASE_PROJECT_PATH, "workspace", "skills") 
+        : targetRoot;
+        
+    console.log(`[DEBUG safePath] requiredPrefix = ${requiredPrefix}`);
+    console.log(`[DEBUG safePath] valid? = ${resolved.startsWith(requiredPrefix)}`);
+
+    if (!resolved.startsWith(requiredPrefix)) {
         throw new Error("Path escapes the project directory. Access denied.");
     }
 
@@ -54,7 +67,7 @@ export const readFileTool: ToolDefinition = {
         name: "read_file",
         description:
             "Read the contents of a file from the project workspace. " +
-            "Requires the channel to be linked to a project. " +
+            "Requires the channel to be linked to a project (except for 'workspace/skills/' which is always accessible). " +
             "Use relative paths from the project root (e.g. 'src/agent.ts'). " +
             "Returns the file contents as text.",
         parameters: {
@@ -157,7 +170,7 @@ export const listFilesTool: ToolDefinition = {
         name: "list_files",
         description:
             "List files and directories in the project workspace. " +
-            "Requires the channel to be linked to a project. " +
+            "Requires the channel to be linked to a project (except for 'workspace/skills/' which is always accessible). " +
             "Use relative paths from the project root. Use '.' for the root directory. " +
             "Returns names, types (file/directory), and sizes.",
         parameters: {

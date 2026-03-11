@@ -1,10 +1,10 @@
 /**
  * memory/embed.ts — Embedding provider wrapper
  * 
- * Primary: Local BGE-M3 server (scripts/embed_server.py on GPU)
+ * Primary: Local BGE-base server (scripts/embed_server.py on GPU)
  * Fallback: Gemini `gemini-embedding-001` API (768→1024 via outputDimensionality)
  * 
- * The local server runs on http://localhost:11435 and serves BGE-M3 
+ * The local server runs on http://localhost:11435 and serves BGE-base 
  * embeddings on the GPU, bypassing the AVX requirement on older CPUs.
  */
 
@@ -34,7 +34,7 @@ async function checkLocalServer(): Promise<boolean> {
         if (res.ok) {
             const data = await res.json() as any;
             if (_useLocal !== true) {
-                console.log(`🧠 Local BGE-M3 embeddings connected (${data.device}, dim=${data.dimension})`);
+                console.log(`🧠 Local BGE-base embeddings connected (${data.device}, dim=${data.dimension})`);
                 _useLocal = true;
             }
             return true;

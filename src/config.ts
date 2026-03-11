@@ -44,8 +44,8 @@ export const config: Config = {
         }),
 
     MAX_AGENT_ITERATIONS: parseInt(
-        process.env["MAX_AGENT_ITERATIONS"] ?? "10",
-        10
+        process.env["MAX_AGENT_ITERATIONS"] ?? "20",
+        20
     ),
-    BASE_PROJECT_PATH: process.env["BASE_PROJECT_PATH"] ?? "D:\\FILES\\Code\\BotProjects",
+    BASE_PROJECT_PATH: process.env["BASE_PROJECT_PATH"] ?? "D:\\FILES\\Code\\AntiGravityClaw",
 };

@@ -139,13 +139,14 @@ function bm25Search(
     topK: number,
     beforeId?: number
 ): SearchResult[] {
-    // Escape FTS5 special chars for safe matching
+    // Escape FTS5 special chars for safe matching by removing all non-alphanumeric chars
     const safeQuery = query
-        .replace(/[*"():^~{}[\]\\?]/g, " ")
+        .replace(/[^a-zA-Z0-9\s]/g, " ")
         .replace(/\bAND\b|\bOR\b|\bNOT\b/gi, " ")
         .split(/\s+/)
         .filter(w => w.length > 1)
-        .join(" ");
+        .map(w => `"${w}"*`)
+        .join(" OR ");
 
     if (!safeQuery.trim()) return [];
 

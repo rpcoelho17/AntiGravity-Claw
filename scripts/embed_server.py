@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-scripts/embed_server.py — Local BGE-M3 embedding HTTP server
+scripts/embed_server.py — Local BGE-base embedding HTTP server
 Runs on CUDA (GPU) to bypass AVX requirement on older CPUs.
 Serves POST /embed and GET /health on localhost:11435.
 """

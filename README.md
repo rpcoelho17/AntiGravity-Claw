@@ -6,7 +6,7 @@ AntiGravityClaw is a locally-hosted AI agent designed for privacy-conscious user
 
 ## 🚀 Key Features
 
-- **Private Ingestion**: Local Python-based embedding server (BGE-M3) ensures your documents aren't sent to embedding APIs.
+- **Private Ingestion**: Local Python-based embedding server (BGE-base-en-v1.5) ensures your documents aren't sent to embedding APIs.
 - **Hybrid Memory**: Vector-based semantic search + Full-Text Search (BM25) via `sqlite-vec`.
 - **Three-Band Context Model**: Sophisticated prompt management using long-term memory, rolling summaries, and recent message history.
 - **Telegram Interface**: Interact with your agent from anywhere with multi-channel support.
@@ -18,7 +18,7 @@ AntiGravityClaw is a locally-hosted AI agent designed for privacy-conscious user
 - **Runtime**: Node.js (TypeScript) + tsx
 - **Database**: SQLite with `sqlite-vec` extension
 - **LLM**: OpenRouter (Primary) / Google Gemini (Fallback)
-- **Embeddings**: BGE-M3 (SentenceTransformers) on Python/CUDA
+- **Embeddings**: BGE-base-en-v1.5 (SentenceTransformers) on Python/CUDA
 - **AI Framework**: custom agentic loop with tool registry
 
 ## 📦 Setup

@@ -75,7 +75,54 @@ bot.on("message:text", async (ctx) => {
 // ── Voice Message Handler ───────────────────────────────────────────
 
 bot.on("message:voice", async (ctx) => {
-    // ... (existing code)
+    const userName = ctx.from.first_name ?? "User";
+    console.log(`🎙️ Voice message from ${userName} (${ctx.from.id})`);
+
+    ctx.replyWithChatAction("typing").catch(e => console.error("Could not send chat action:", e.message));
+
+    try {
+        const file = await ctx.getFile();
+        const url = `https://api.telegram.org/file/bot${config.TELEGRAM_BOT_TOKEN}/${file.file_path}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) throw new Error(`Failed to fetch voice: ${response.statusText}`);
+
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        // 1. Transcribe
+        const transcription = await transcribeAudio(buffer);
+        console.log(`📝 Transcribed: "${transcription}"`);
+        
+        // Reply directly to the user's voice message so it links contextually to their bubble
+        await ctx.reply(`_“${transcription}”_`, { 
+            parse_mode: "Markdown",
+            reply_parameters: { message_id: ctx.message.message_id }
+        });
+
+        // 2. Process through agent
+        const agentResponse = await runAgentLoop(transcription);
+
+        // 3. Send text in italics first
+        try {
+            await ctx.reply(`_${agentResponse}_`, { parse_mode: "Markdown" });
+        } catch {
+            await ctx.reply(agentResponse);
+        }
+
+        // 4. Convert response to speech
+        try {
+            const speechBuffer = await generateSpeech(agentResponse);
+            await ctx.replyWithVoice(new InputFile(speechBuffer, "response.voice"));
+        } catch (ttsErr) {
+            console.error("❌ TTS error:", ttsErr);
+            await ctx.reply(`_${agentResponse}_`, { parse_mode: "Markdown" });
+        }
+
+    } catch (err: any) {
+        console.error("❌ Voice handler error:", err);
+        await ctx.reply(`Sorry, I couldn't process your voice message: ${err.message}`);
+    }
 });
 
 // ── Document Handler ───────────────────────────────────────────────

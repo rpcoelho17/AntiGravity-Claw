@@ -21,6 +21,52 @@ import {
     MEMORY_MD_PATH,
 } from "./memory/index.js";
 import fs from "fs";
+import path from "path";
+
+// ── Skills Context ──────────────────────────────────────────────────
+
+function getSkillsContext(): string {
+    const skillsDir = path.resolve(process.cwd(), "workspace/skills");
+    if (!fs.existsSync(skillsDir)) return "";
+
+    const skills: { name: string; description: string; dir: string }[] = [];
+    
+    try {
+        const entries = fs.readdirSync(skillsDir, { withFileTypes: true });
+        for (const entry of entries) {
+            if (!entry.isDirectory()) continue;
+            
+            const skillMdPath = path.join(skillsDir, entry.name, "SKILL.md");
+            if (!fs.existsSync(skillMdPath)) continue;
+
+            const content = fs.readFileSync(skillMdPath, "utf-8");
+            
+            // Simple regex to extract name and description from YAML frontmatter
+            const nameMatch = content.match(/^name:\s*(.+)$/m);
+            const descMatch = content.match(/^description:\s*(.+)$/m);
+            
+            if (nameMatch && descMatch) {
+                skills.push({
+                    name: nameMatch[1].trim(),
+                    description: descMatch[1].trim(),
+                    dir: entry.name
+                });
+            }
+        }
+    } catch (err) {
+        console.warn("⚠️ Failed to parse skills directory:", err);
+    }
+
+    if (skills.length === 0) return "";
+
+    let prompt = `## Installed Skills\nYou have access to the following extensible skills. If one matches the user's request, you MUST use the \`read_file\` tool to read its \`SKILL.md\` file to learn how to execute it BEFORE taking action. Note: Skills are GLOBALLY available. You DO NOT need to check if the channel is linked to a project to use skills. Just read the SKILL.md file and execute it.\n\n`;
+    
+    for (const skill of skills) {
+        prompt += `- **${skill.name}** (Path: \`workspace/skills/${skill.dir}/SKILL.md\`): ${skill.description}\n`;
+    }
+    
+    return prompt;
+}
 
 // ── System prompt (base) ────────────────────────────────────────────
 
@@ -59,6 +105,12 @@ async function buildSystemPrompt(channel: string, userMessage: string): Promise<
 
     // 1. Base system prompt (most stable — always first)
     parts.push(BASE_SYSTEM_PROMPT);
+
+    // 1.5. Installed Skills (changes only on skill install)
+    const skillsContext = getSkillsContext();
+    if (skillsContext) {
+        parts.push(skillsContext);
+    }
 
     // 2. MEMORY.md — curated facts (rarely changes → cache checkpoint)
     try {
