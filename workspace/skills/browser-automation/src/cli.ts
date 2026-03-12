@@ -27,6 +27,8 @@ dotenv.config({ path: join(PLUGIN_ROOT, '.env'), quiet: true });
 // Also load .env from project root
 dotenv.config({ path: join(PLUGIN_ROOT, '..', '..', '.env'), quiet: true });
 
+console.error('[Diagnostic] Browser Automation CLI Starting...');
+
 const apiKeyResult = getAnthropicApiKey();
 const apiKey = process.env.ANTHROPIC_API_KEY || (apiKeyResult?.apiKey);
 if (!apiKey) {
@@ -210,7 +212,39 @@ async function initBrowser(): Promise<{ stagehand: Stagehand }> {
   });
 
   await stagehandInstance.init();
-  currentPage = stagehandInstance.context.pages()[0];
+  
+  // Get all pages and log them for debugging
+  const pages = stagehandInstance.context.pages();
+  console.error(`[Diagnostic] Found ${pages.length} open pages`);
+  
+  let bestPageIdx = 0;
+  for (let i = 0; i < pages.length; i++) {
+    const url = pages[i].url();
+    let title = "Unknown";
+    try {
+      title = await pages[i].title();
+    } catch {}
+    console.error(`[Diagnostic] Page ${i}: title="${title}", url="${url}"`);
+    
+    // If we find a "New Tab" or "Nova guia", that's likely the one the user is looking at
+    if (title.includes("New Tab") || title.includes("Nova guia") || url === "chrome://newtab/" || url === "about:blank") {
+       bestPageIdx = i;
+    }
+  }
+
+  console.error(`[Diagnostic] Selecting Page ${bestPageIdx} as primary target`);
+  currentPage = pages[bestPageIdx];
+  
+  // Ensure the page is focused and visible
+  try {
+    await (currentPage as any).bringToFront();
+    // Also try a simple reload if it's a new tab to "claim" it
+    if (currentPage.url().includes('newtab') || currentPage.url() === 'about:blank') {
+       await currentPage.goto('about:blank');
+    }
+  } catch (err) {
+    console.error('[Diagnostic] Failed to bring page to front or claim it:', err);
+  }
 
   // Wait for page to be ready
   let retries = 0;
@@ -241,7 +275,7 @@ async function initBrowser(): Promise<{ stagehand: Stagehand }> {
 }
 
 async function closeBrowser() {
-  const cdpPort = 9222;
+  const cdpPort = 9223; // Use the correct port
   const pidFilePath = join(PLUGIN_ROOT, '.chrome-pid');
 
   // First, try to close via Stagehand if we have an instance in this process
