@@ -2,6 +2,7 @@
 import { Page, Stagehand } from '@browserbasehq/stagehand';
 import { existsSync, mkdirSync, writeFileSync, readFileSync, unlinkSync } from 'fs';
 import { spawn, ChildProcess } from 'child_process';
+import { platform } from 'os';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { findLocalChrome, prepareChromeProfile, takeScreenshot, getAnthropicApiKey } from './browser-utils.js';
@@ -23,6 +24,8 @@ const PLUGIN_ROOT = resolve(__dirname, '..', '..');
 
 // Load .env from plugin root directory
 dotenv.config({ path: join(PLUGIN_ROOT, '.env'), quiet: true });
+// Also load .env from project root
+dotenv.config({ path: join(PLUGIN_ROOT, '..', '..', '.env'), quiet: true });
 
 const apiKeyResult = getAnthropicApiKey();
 const apiKey = process.env.ANTHROPIC_API_KEY || (apiKeyResult?.apiKey);
@@ -56,17 +59,25 @@ async function initBrowser(): Promise<{ stagehand: Stagehand }> {
     // Remote: Browserbase cloud browser
     console.error('Using Browserbase cloud browser');
     
+    let modelName = process.env.PRIMARY_MODEL || process.env.BROWSER_MODEL || "arcee-ai/trinity-large-preview:free";
+    if (!modelName.startsWith("openai/")) {
+      modelName = `openai/${modelName}`;
+    }
+    const baseURL = process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1";
+    const apiKey = process.env.OPENROUTER_API_KEY || process.env.ANTHROPIC_API_KEY;
+
+    if (process.env.DEBUG) console.error(`STAGEHAND CONFIG: model=${modelName}, baseURL=${baseURL}`);
+
     stagehandInstance = new Stagehand({
       env: "BROWSERBASE",
       apiKey: process.env.BROWSERBASE_API_KEY,
       projectId: process.env.BROWSERBASE_PROJECT_ID,
       verbose: 0,
       model: {
-        modelName: process.env.BROWSER_MODEL || "anthropic/claude-3-5-sonnet-latest",
-        clientOptions: {
-          apiKey: process.env.ANTHROPIC_API_KEY,
-          baseURL: process.env.OPENROUTER_BASE_URL,
-        }
+        provider: "openai",
+        modelName: modelName,
+        apiKey: apiKey,
+        baseURL: baseURL,
       } as any,
     });
 
@@ -88,13 +99,16 @@ async function initBrowser(): Promise<{ stagehand: Stagehand }> {
     return { stagehand: stagehandInstance };
   }
 
+  // Prepare Chrome profile (copy tokens/logins from main Chrome)
+  prepareChromeProfile(PLUGIN_ROOT);
+
   // Local: Use local Chrome browser
   const chromePath = findLocalChrome();
   if (!chromePath) {
     throw new Error('Could not find Chrome installation. Either install Chrome or set BROWSERBASE_API_KEY and BROWSERBASE_PROJECT_ID for cloud browser.');
   }
 
-  const cdpPort = 9222;
+  const cdpPort = 9223; // Switch to 9223 to avoid conflict with default Chrome (9222)
   const tempUserDataDir = join(PLUGIN_ROOT, '.chrome-profile');
 
   // Check if Chrome is already running on the CDP port
@@ -111,15 +125,29 @@ async function initBrowser(): Promise<{ stagehand: Stagehand }> {
 
   // Launch Chrome if not already running
   if (!chromeReady) {
-    chromeProcess = spawn(chromePath, [
+    // Quote path for Windows to handle spaces safely
+    const quotedChromePath = platform() === 'win32' ? `"${chromePath}"` : chromePath;
+    
+    if (process.env.DEBUG) console.error(`Launching Chrome: ${quotedChromePath} on port ${cdpPort}`);
+
+    chromeProcess = spawn(quotedChromePath, [
       `--remote-debugging-port=${cdpPort}`,
       `--user-data-dir=${tempUserDataDir}`,
-      '--window-position=-9999,-9999', // Launch minimized off-screen
       '--window-size=1250,900',
     ], {
-      stdio: 'ignore', // Ignore stdio to prevent pipe buffer blocking
-      detached: false,
+      stdio: 'pipe', // Change to pipe to capture initial errors if any
+      detached: true,
+      shell: true, // Use shell for better window handling on Windows
+      windowsHide: false,
     });
+
+    // Capture stderr for potential launch errors
+    chromeProcess.stderr?.on('data', (data) => {
+      if (process.env.DEBUG) console.error(`[Chrome Stderr]: ${data}`);
+    });
+
+    // Unref to let it live past CLI exit
+    chromeProcess.unref();
 
     // Store PID for safe cleanup later
     if (chromeProcess.pid) {
@@ -146,6 +174,7 @@ async function initBrowser(): Promise<{ stagehand: Stagehand }> {
     }
 
     if (!chromeReady) {
+      console.error(`ERROR: Chrome timed out after 15s on port ${cdpPort}.`);
       throw new Error('Chrome failed to start');
     }
   }
@@ -155,17 +184,25 @@ async function initBrowser(): Promise<{ stagehand: Stagehand }> {
   const versionData = await versionResponse.json() as { webSocketDebuggerUrl: string };
   const wsUrl = versionData.webSocketDebuggerUrl;
 
+  let modelNameLocal = process.env.PRIMARY_MODEL || process.env.BROWSER_MODEL || "arcee-ai/trinity-large-preview:free";
+  if (!modelNameLocal.startsWith("openai/")) {
+    modelNameLocal = `openai/${modelNameLocal}`;
+  }
+  const baseURLLocal = process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1";
+  const apiKeyLocal = process.env.OPENROUTER_API_KEY || process.env.ANTHROPIC_API_KEY;
+  
+  if (process.env.DEBUG) console.error(`STAGEHAND CONFIG (LOCAL): model=${modelNameLocal}, baseURL=${baseURLLocal}`);
+
   // Initialize Stagehand with the WebSocket URL
   console.error('Using local Chrome browser');
   stagehandInstance = new Stagehand({
     env: "LOCAL",
     verbose: 0,
     model: {
-      modelName: process.env.BROWSER_MODEL || "anthropic/claude-3-5-sonnet-latest",
-      clientOptions: {
-        apiKey: process.env.ANTHROPIC_API_KEY,
-        baseURL: process.env.OPENROUTER_BASE_URL,
-      }
+      provider: "openai",
+      modelName: modelNameLocal,
+      apiKey: apiKeyLocal,
+      baseURL: baseURLLocal,
     } as any,
     localBrowserLaunchOptions: {
       cdpUrl: wsUrl,
@@ -251,10 +288,10 @@ async function closeBrowser() {
         env: "LOCAL",
         verbose: 0,
         model: {
-          modelName: process.env.BROWSER_MODEL || "anthropic/claude-3-5-sonnet-latest",
+          modelName: process.env.BROWSER_MODEL?.includes('/') ? process.env.BROWSER_MODEL : `anthropic/${process.env.BROWSER_MODEL || "claude-3-5-sonnet-latest"}`,
           clientOptions: {
             apiKey: process.env.ANTHROPIC_API_KEY,
-            baseURL: process.env.OPENROUTER_BASE_URL,
+            baseURL: process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1",
           }
         } as any,
         localBrowserLaunchOptions: {

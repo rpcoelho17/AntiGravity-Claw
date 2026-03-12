@@ -166,8 +166,17 @@ export function prepareChromeProfile(pluginRoot: string) {
     const destDefaultProfile = join(tempUserDataDir, 'Default');
 
     if (existsSync(sourceDefaultProfile)) {
-      cpSync(sourceDefaultProfile, destDefaultProfile, { recursive: true });
-      console.log(`${dim}✓ Profile copied successfully${reset}\n`);
+      try {
+        // Use recursive copy with error handling for individual files
+        cpSync(sourceDefaultProfile, destDefaultProfile, { 
+          recursive: true,
+          force: true,
+          errorOnExist: false
+        });
+        console.log(`${dim}✓ Profile copied successfully${reset}\n`);
+      } catch (error) {
+        console.log(`${dim}⚠ Partial profile copy (some files might be in use by another Chrome instance)${reset}\n`);
+      }
     } else {
       console.log(`${dim}No existing profile found, using fresh profile${reset}\n`);
     }

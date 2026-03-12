@@ -29,40 +29,46 @@ function getSkillsContext(): string {
     const skillsDir = path.resolve(process.cwd(), "workspace/skills");
     if (!fs.existsSync(skillsDir)) return "";
 
-    const skills: { name: string; description: string; dir: string }[] = [];
+    const skills: { name: string; description: string; path: string }[] = [];
     
-    try {
-        const entries = fs.readdirSync(skillsDir, { withFileTypes: true });
-        for (const entry of entries) {
-            if (!entry.isDirectory()) continue;
-            
-            const skillMdPath = path.join(skillsDir, entry.name, "SKILL.md");
-            if (!fs.existsSync(skillMdPath)) continue;
-
-            const content = fs.readFileSync(skillMdPath, "utf-8");
-            
-            // Simple regex to extract name and description from YAML frontmatter
-            const nameMatch = content.match(/^name:\s*(.+)$/m);
-            const descMatch = content.match(/^description:\s*(.+)$/m);
-            
-            if (nameMatch && descMatch) {
-                skills.push({
-                    name: nameMatch[1].trim(),
-                    description: descMatch[1].trim(),
-                    dir: entry.name
-                });
+    // Recursive function to find SKILL.md files up to depth 3
+    function findSkillFiles(dir: string, depth: number = 0) {
+        if (depth > 3) return;
+        try {
+            const entries = fs.readdirSync(dir, { withFileTypes: true });
+            for (const entry of entries) {
+                const fullPath = path.join(dir, entry.name);
+                if (entry.isDirectory()) {
+                    // Skip hidden dirs, common noise, and node_modules
+                    if (entry.name.startsWith('.') || entry.name === 'node_modules' || entry.name.startsWith('_')) continue;
+                    findSkillFiles(fullPath, depth + 1);
+                } else if (entry.name === "SKILL.md") {
+                    const content = fs.readFileSync(fullPath, "utf-8");
+                    const nameMatch = content.match(/^name:\s*(.+)$/m);
+                    const descMatch = content.match(/^description:\s*(.+)$/m);
+                    
+                    if (nameMatch && descMatch) {
+                        skills.push({
+                            name: nameMatch[1].trim(),
+                            description: descMatch[1].trim(),
+                            path: path.relative(process.cwd(), fullPath).replace(/\\/g, "/")
+                        });
+                    }
+                }
             }
+        } catch (err) {
+            console.warn(`⚠️ Failed to scan dir ${dir}:`, err);
         }
-    } catch (err) {
-        console.warn("⚠️ Failed to parse skills directory:", err);
     }
+
+    findSkillFiles(skillsDir);
 
     if (skills.length === 0) return "";
 
     let prompt = `## Installed Skills\nYou have access to the following extensible skills. If one matches the user's request, you MUST use the \`read_file\` tool to read its \`SKILL.md\` file to learn how to execute it BEFORE taking action. Note: Skills are GLOBALLY available. You DO NOT need to check if the channel is linked to a project to use skills. Just read the SKILL.md file and execute it.\n\n`;
     
     for (const skill of skills) {
-        prompt += `- **${skill.name}** (Path: \`workspace/skills/${skill.dir}/SKILL.md\`): ${skill.description}\n`;
+        prompt += `- **${skill.name}** (Path: \`${skill.path}\`): ${skill.description}\n`;
     }
     
     return prompt;
@@ -70,7 +76,8 @@ function getSkillsContext(): string {
 
 // ── System prompt (base) ────────────────────────────────────────────
 
-const BASE_SYSTEM_PROMPT = `You are Gravity Claw — a personal AI assistant running as a Telegram bot.
+function getBaseSystemPrompt(): string {
+    const base = `You are Gravity Claw — a personal AI assistant running as a Telegram bot.
 You are an extension of the AntiGravity IDE agent, accessible from the user's phone.
 
 Core traits:
@@ -91,6 +98,20 @@ you previously. Use this context naturally.
 
 You are running locally on the user's machine. Be security-conscious.`;
 
+    // Try to load extra instructions from project root
+    const instructionsPath = path.resolve(process.cwd(), ".antigravity/instructions.md");
+    if (fs.existsSync(instructionsPath)) {
+        try {
+            const extra = fs.readFileSync(instructionsPath, "utf-8").trim();
+            return `${base}\n\n## Global Instructions\n${extra}`;
+        } catch (err) {
+            console.warn("⚠️ Failed to read .antigravity/instructions.md:", err);
+        }
+    }
+
+    return base;
+}
+
 // ── Build enriched system prompt with memory context ────────────────
 // Assembly order per V4 spec Section 8:
 //   1. Base system prompt (identity + instructions)
@@ -104,7 +125,7 @@ async function buildSystemPrompt(channel: string, userMessage: string): Promise<
     const parts: string[] = [];
 
     // 1. Base system prompt (most stable — always first)
-    parts.push(BASE_SYSTEM_PROMPT);
+    parts.push(getBaseSystemPrompt());
 
     // 1.5. Installed Skills (changes only on skill install)
     const skillsContext = getSkillsContext();

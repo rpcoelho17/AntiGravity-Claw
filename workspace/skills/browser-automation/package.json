@@ -7,6 +7,7 @@
   },
   "scripts": {
     "claude": "tsx agent-browse.ts",
+    "start": "tsx src/cli.ts",
     "build": "tsc",
     "postinstall": "npm run build"
   },

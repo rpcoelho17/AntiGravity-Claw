@@ -5,3 +5,6 @@ dist/
 *.db-journal
 data/
 models/
+workspace/skills/.chrome-profile/
+workspace/skills/.chrome-pid
+workspace/skills/browser-automation/agent/browser_screenshots/

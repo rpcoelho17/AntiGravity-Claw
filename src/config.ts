@@ -11,6 +11,7 @@ export interface Config {
     ALLOWED_USER_IDS: number[];
     MAX_AGENT_ITERATIONS: number;
     BASE_PROJECT_PATH: string;
+    PRIMARY_MODEL: string;
 }
 
 function requireEnv(name: string): string {
@@ -48,4 +49,5 @@ export const config: Config = {
         20
     ),
     BASE_PROJECT_PATH: process.env["BASE_PROJECT_PATH"] ?? "D:\\FILES\\Code\\AntiGravityClaw",
+    PRIMARY_MODEL: process.env["PRIMARY_MODEL"] ?? "stepfun/step-3.5-flash:free",
 };

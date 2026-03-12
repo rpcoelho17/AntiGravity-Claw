@@ -1,13 +1,14 @@
 ---
 name: Agent Browser
-description: (LEGACY/BACKUP) A fast Rust-based headless browser automation CLI. Use only for simple text extraction if browser-automation fails. Not recommended for modern web apps or protected sites.
+description: (LEGACY/BACKUP) Rust-based headless browser. Use ONLY as a fallback for simple text fetching.
 read_when:
-  - Automating web interactions
-  - Extracting structured data from pages
-  - Filling forms programmatically
-  - Testing web UIs
-metadata: {"clawdbot":{"emoji":"🌐","requires":{"bins":["node","npm"]}}}
+  - You FAIL to use the PRIMARY browser-automation tool
+  - The user specifically asks for a "headless" or "fast" text-only scrape
+metadata: {"clawdbot":{"emoji":"🌐"}}
 allowed-tools: Bash(agent-browser:*)
+
+> [!WARNING]
+> DO NOT USE for LinkedIn, social media, or any site requiring a login. Use the **browser-automation** skill instead for a real visible Chrome window.
 ---
 
 # Browser Automation with agent-browser
