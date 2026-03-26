@@ -60,6 +60,33 @@
 
 **Why BGE-Base over BGE-Large:** BGE-Base is 2-3x faster with only marginally lower quality. On an RTX 4060, it embeds ~984 chunks from a 700-page book in ~40 seconds (31 batches × 32 chunks).
 
+### 2.1 Model Drift & Migration Management
+
+Because vector search depends on stable dimensions and model-specific vector spaces, any change to the embedding model requires a coordinated migration.
+
+**1. Detection (Drift Check)**
+On every startup, `sync.ts` compares the **Model Metadata** (from the running server's `/health` endpoint) against the **Database Metadata** (stored in the `settings` table as `embedding_model` and `embedding_dimension`). If they do not match, the system enters **MIGRATION MODE**.
+
+**2. Migration Mode (Safeguard)**
+While in migration mode, the LLM is restricted via a specialized system prompt:
+- **Search is Disabled:** No context from `memory.db` is provided to the prompt.
+- **RESTRICTED Tools:** Only migration tools (`propose_model_migration`, `propose_reingest_collections`) and core tools (`get_current_time`) are available.
+- **Mandatory Notification:** The LLM MUST notify the user: *"I've detected that your default embedding model has changed. Should I switch to the new model? This will wipe clean your memory.db and all the ingestions! Respond by typing Yes or no."*
+
+**3. Step 1: Schema Migration (`propose_model_migration`)**
+Upon user confirmation ("Yes"), the system executes Step 1:
+- Wipes the `memory`, `documents`, and `summaries` tables.
+- Wipes the `memory_fts` (BM25) table.
+- **Drops and Recreates** the `memory_embeddings` virtual table with the NEW dimension (e.g., 768 or 1024).
+- Updates the `embedding_model` and `embedding_dimension` settings in the DB.
+
+**4. Step 2: Content Re-ingestion (`propose_reingest_collections`)**
+After the schema is ready, the system prompts the user to re-ingest:
+- The tool loops through all sub-directories in `workspace/collections/`.
+- For every file found, it spawns `scripts/ingest.py` to re-extract and re-embed.
+- **Progress Reporting:** Sends real-time Telegram updates (`✅ [X/Total] Filename`) so the user can track the process without watching terminal logs.
+- Links all re-ingested collections back to the `Default` (D) channel.
+
 ---
 
 ## 3. Directory Structure
@@ -727,10 +754,13 @@ npm run dev
         │     └── Call refreshLocalAvailability() after detection
         ├── 3. Check model drift (sync.ts)
         │     ├── Compare DB model/dim vs .env and server /health
-        │     ├── If mismatch → notify user via Telegram, prompt Yes/No
-        │     └── On confirm → wipe tables, recreate vec0 with new dim
-        ├── 4. Start Telegram bot (long-polling)
-        └── 5. Ready — processing messages
+        │     ├── If mismatch → Enable restricted **MIGRATION MODE**
+        │     ├── Notify user via Telegram (Mandatory drift message)
+        │     └── If user confirms "Yes" → Call `propose_model_migration`
+        ├── 4. Finalize Migration (Optional)
+        │     └── Prompt user to re-ingest collections via `propose_reingest_collections`
+        ├── 5. Start Telegram bot (long-polling)
+        └── 6. Ready — processing messages (Migration Mode cleared if synced)
 ```
 
 ---
