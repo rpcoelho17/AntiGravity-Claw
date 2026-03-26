@@ -56,12 +56,12 @@ function reciprocalRankFusion(
     const scores = new Map<number, number>();
 
     vectorResults.forEach((r, rank) => {
-        const decay = r.type === "M" ? temporalDecay(r.timestamp, halfLifeDays) : 1.0;
+        const decay = temporalDecay(r.timestamp, halfLifeDays);
         scores.set(r.id, (scores.get(r.id) ?? 0) + vectorWeight * (1 / (k + rank + 1)) * decay);
     });
 
     bm25Results.forEach((r, rank) => {
-        const decay = r.type === "M" ? temporalDecay(r.timestamp, halfLifeDays) : 1.0;
+        const decay = temporalDecay(r.timestamp, halfLifeDays);
         scores.set(r.id, (scores.get(r.id) ?? 0) + bm25Weight * (1 / (k + rank + 1)) * decay);
     });
 
@@ -117,7 +117,7 @@ function vectorSearch(
 
         if (r.type === "M") return r.channel === channel;
         if (r.type === "R") {
-            if (!collections || collections.length === 0) return true;
+            if (!collections || collections.length === 0) return false;
             return collections.includes(r.collection);
         }
         return false;
@@ -183,7 +183,7 @@ function bm25Search(
 
             if (r.type === "M") return r.channel === channel;
             if (r.type === "R") {
-                if (!collections || collections.length === 0) return true;
+                if (!collections || collections.length === 0) return false;
                 return collections.includes(r.collection);
             }
             return false;
@@ -282,6 +282,8 @@ export async function search(
 
     // Enrich RAG chunks with surrounding context
     merged = enrichWithContext(merged);
+
+    console.log(`🔍 Search summary: ${vecResults.length} vector, ${bm25Results.length} BM25. Final merged: ${merged.length}`);
 
     return merged;
 }

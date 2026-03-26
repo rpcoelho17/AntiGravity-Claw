@@ -20,15 +20,22 @@ import re
 import struct
 import sqlite3
 
-# ── Configuration ────────────────────────────────────────────────────
+# ── Global Metadata (Populated from server) ──────────────────────────
+EMBED_SERVER_URL = os.environ.get("EMBED_SERVER_URL", "127.0.0.1")
+EMBED_SERVER_PORT = int(os.environ.get("EMBED_SERVER_PORT", "11435"))
+MODEL_MAX_SEQ_LENGTH = 512
+MODEL_DIMENSION = 768
 
-EMBED_SERVER_URL = "127.0.0.1"
-EMBED_SERVER_PORT = 11435
+# ── Target ratios for chunking ───────────────────────────────────────
+# We aim for ~80% of max context to leave room for overhead/templates
+TARGET_RATIO = 0.7 
+MAX_RATIO = 0.9
 
-TARGET_CHUNK_SIZE = 1200    # target chars per chunk
-MAX_CHUNK_SIZE = 1800       # hard max before forced split
-MIN_CHUNK_SIZE = 80         # ignore tiny fragments
-OVERLAP_SIZE = 100          # chars of overlap between chunks
+# These will be calculated dynamically based on MODEL_MAX_SEQ_LENGTH
+TARGET_CHUNK_SIZE = 1200    # Default chars (approx 300 tokens)
+MAX_CHUNK_SIZE = 1800       # Default hard max
+MIN_CHUNK_SIZE = 80         # Static minimum
+OVERLAP_SIZE = 100          # Static overlap
 
 # ── Text Extraction ──────────────────────────────────────────────────
 
@@ -38,6 +45,31 @@ try:
     from bs4 import BeautifulSoup
 except ImportError:
     print("WARN: Missing extraction libraries (pypdf, python-docx, or beautifulsoup4)", file=sys.stderr)
+
+def fetch_model_metadata():
+    """Query the embedding server for model capabilities."""
+    global TARGET_CHUNK_SIZE, MAX_CHUNK_SIZE, MODEL_MAX_SEQ_LENGTH, MODEL_DIMENSION
+    print(f"INFO: Fetching model metadata from {EMBED_SERVER_URL}:{EMBED_SERVER_PORT}...", file=sys.stderr)
+    try:
+        conn = http.client.HTTPConnection(EMBED_SERVER_URL, EMBED_SERVER_PORT, timeout=5)
+        conn.request("GET", "/health")
+        res = conn.getresponse()
+        if res.status == 200:
+            data = json.loads(res.read().decode())
+            MODEL_MAX_SEQ_LENGTH = data.get("max_seq_length", 512)
+            MODEL_DIMENSION = data.get("dimension", 768)
+            
+            # Heuristic: 1 token is roughly 4 characters in English
+            # We scale our character-based chunking accordingly
+            TARGET_CHUNK_SIZE = int(MODEL_MAX_SEQ_LENGTH * 4 * TARGET_RATIO)
+            MAX_CHUNK_SIZE = int(MODEL_MAX_SEQ_LENGTH * 4 * MAX_RATIO)
+            
+            print(f"SUCCESS: Model '{data.get('model')}' detected.", file=sys.stderr)
+            print(f"         Context: {MODEL_MAX_SEQ_LENGTH} tokens", file=sys.stderr)
+            print(f"         Dynamically set TARGET_CHUNK_SIZE={TARGET_CHUNK_SIZE} chars", file=sys.stderr)
+        conn.close()
+    except Exception as e:
+        print(f"WARN: Could not fetch metadata ({e}). Using defaults.", file=sys.stderr)
 
 def extract_text(file_path):
     ext = os.path.splitext(file_path)[1].lower()
@@ -228,7 +260,7 @@ def store_in_db(db_path: str, vec_ext_path: str, file_name: str, collection: str
     cursor = conn.cursor()
     
     # Ensure tables exist (Python is self-sufficient — doesn't need Node to create them)
-    dim = len(embeddings[0]) if embeddings else 768
+    dim = MODEL_DIMENSION
     cursor.executescript(f"""
         CREATE TABLE IF NOT EXISTS documents (
             doc_id      INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -270,7 +302,7 @@ def store_in_db(db_path: str, vec_ext_path: str, file_name: str, collection: str
     cursor.execute("""
         INSERT OR IGNORE INTO documents (name, collection, file_path, description, status)
         VALUES (?, ?, ?, ?, 'ingesting')
-    """, (file_name, collection, f"collections/{collection}/", text_preview[:500]))
+    """, (file_name, collection, os.path.join("collections", collection, file_name), text_preview[:500]))
     
     if cursor.rowcount == 0:
         # Document already exists — clear old data and re-ingest
@@ -353,6 +385,9 @@ def main():
             print(json.dumps({"error": error_msg}), flush=True)
             print(f"ERROR: {error_msg}", file=sys.stderr, flush=True)
             return
+
+        # Fetch metadata and adjust chunking
+        fetch_model_metadata()
 
         print(f"DEBUG: Processing {file_path}", file=sys.stderr, flush=True)
 

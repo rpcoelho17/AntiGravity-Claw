@@ -11,6 +11,8 @@ import {
     getSetting,
     getSettingNum,
     handleConfirmation,
+    getPendingConfirmation,
+    clearPendingConfirmation,
     search,
     formatSearchContext,
     shouldUpdateSummary,
@@ -19,6 +21,8 @@ import {
     retryFailedEmbeddings,
     initDeepSearch,
     MEMORY_MD_PATH,
+    checkModelDrift,
+    getChannelCollections,
 } from "./memory/index.js";
 import fs from "fs";
 import path from "path";
@@ -96,7 +100,15 @@ You have persistent memory across conversations and channels. Each channel
 is like a separate project workspace. You can recall what the user has told
 you previously. Use this context naturally.
 
-You are running locally on the user's machine. Be security-conscious.`;
+You are running locally on the user's machine. Be security-conscious.
+
+## Source Authority
+If information in the "Relevant Context" (documents) conflicts with your previous statements in "Recent Conversation", the documents are the absolute source of truth. Admit the mistake, use the newer information, and provide the updated answer.
+
+## Tool Usage Constraints
+- **Documents**: Use \`search\` or \`deep_memory_search\` for ANY document inside \`workspace/collections/\`. NEVER use \`read_file\` or \`list_files\` for these.
+- **Code/Projects**: Use \`read_file\`, \`list_files\`, and \`write_file\` ONLY for project source code and configuration files.
+- **Sandboxing**: If a tool fails with "Access Denied", do NOT ask the user to link a project unless you are explicitly trying to work on code. If you are trying to find document information, you likely forgot to link the collection via \`propose_link_collection\`.`;
 
     // Try to load extra instructions from project root
     const instructionsPath = path.resolve(process.cwd(), ".antigravity/instructions.md");
@@ -143,6 +155,14 @@ async function buildSystemPrompt(channel: string, userMessage: string): Promise<
         // MEMORY.md doesn't exist yet — that's fine
     }
 
+    // 2.5 Pending Confirmation (Context awareness)
+    const pending = getPendingConfirmation("tg");
+    if (pending) {
+        parts.push(`## Pending Action Required\nYou recently proposed an action: "${pending.prompt_shown}". 
+The user's next message might be a response to this prompt, or a clarifying question. 
+If they hasn't answered yet, you can briefly remind them if it's relevant, or answer their unrelated question first.`);
+    }
+
     // 3. Rolling summary (changes every N messages → cache checkpoint)
     const summary = getSummary(channel);
     if (summary) {
@@ -171,6 +191,12 @@ async function buildSystemPrompt(channel: string, userMessage: string): Promise<
     // 5. Active channel indicator
     const channelDisplay = channel === "D" ? "Default" : channel;
     parts.push(`## Active Channel: ${channelDisplay}`);
+
+    // 5.5. Linked Collections (to prevent redundant linking prompts)
+    const linked = getChannelCollections(channel);
+    if (linked.length > 0) {
+        parts.push(`## Linked Collections\nThe following collections are already linked to this channel:\n${linked.map((c: string) => `- ${c}`).join("\n")}`);
+    }
 
     // 6. Recent messages verbatim (least stable — always last)
     const recentText = formatRecentMessages(recent);
@@ -210,7 +236,31 @@ initDeepSearch(callSummarizationLLM);
 
 // ── Agent loop ──────────────────────────────────────────────────────
 
+export const EMBED_WAIT_MESSAGE = "Wait for a second while I finish loading my embedding model into memory... 🧠";
+
 export async function runAgentLoop(userMessage: string): Promise<string> {
+    // -0. CHECK IF EMBEDDING SERVER IS READY
+    const { isLocalEmbeddingAvailable } = await import("./memory/embed.js");
+    if (!(await isLocalEmbeddingAvailable())) {
+        return EMBED_WAIT_MESSAGE;
+    }
+
+    // 0. CHECK FOR MODEL DRIFT (Mandatory for GPU/CPU safety)
+    let driftWarning = "";
+    try {
+        const drift = await checkModelDrift();
+        if (drift) {
+            driftWarning = `
+⚠️ **EMBEDDING MODEL CHANGE DETECTED**
+- Action Required: You MUST respond to the user with EXACTLY THIS MESSAGE: "I've detected that your default embedding model has changed. Should I switch to the new model? This will wipe clean your memory.db and all the ingestions! Respond by typing Yes or no."
+- Logic: If the user says "Yes", you MUST call the \`propose_model_migration\` tool with \`confirm: true\`. If they say "No", explain that search will remain disabled until they revert .env or migrate.
+- Restriction: Do NOT use any other tools except migration tools.
+`;
+        }
+    } catch (err) {
+        console.warn("⚠️ Failed to check model drift:", err);
+    }
+
     // Get active channel for Telegram
     const channel = getSetting("active_channel:tg") ?? "D";
 
@@ -227,10 +277,26 @@ export async function runAgentLoop(userMessage: string): Promise<string> {
         return `That looked like a large paste. I've saved and indexed it in your p:${channel} collection. What would you like to know about it?`;
     }
 
-    // Build enriched system prompt with full three-band context
-    const systemPrompt = await buildSystemPrompt(channel, userMessage);
+    // Build system prompt
+    let systemPrompt: string;
+    let tools = getToolsForLLM();
 
-    const tools = getToolsForLLM();
+    if (driftWarning) {
+        // DRIFT MODE: Minimal prompt, restricted tools, NO search/context assembly
+        systemPrompt = `
+You are Gravity Claw. 
+${driftWarning}
+
+CRITICAL: You are in MIGRATION MODE. Access to memory and search is DISABLED.
+You MUST ONLY respond with the migration message or call a migration tool.
+`;
+        // Restrict tools to only migration and core
+        tools = tools.filter(t => (t as any).function?.name.startsWith("propose_") || (t as any).function?.name === "get_current_time");
+    } else {
+        // NORMAL MODE: Full context assembly
+        systemPrompt = await buildSystemPrompt(channel, userMessage);
+    }
+
     const messages: ChatCompletionMessageParam[] = [
         { role: "user", content: userMessage },
     ];
@@ -262,6 +328,7 @@ export async function runAgentLoop(userMessage: string): Promise<string> {
 
         // Execute each tool and append results
         let hasProposeTool = false;
+        let directSent = false;
 
         for (const toolCall of response.toolCalls) {
             console.log(`  🔧 Tool call: ${toolCall.name}`, toolCall.arguments);
@@ -283,6 +350,13 @@ export async function runAgentLoop(userMessage: string): Promise<string> {
                 break;
             }
 
+            // Direct-send: tool already sent the message to the user
+            if (result.includes("[DIRECT_SENT]")) {
+                directSent = true;
+                finalResponse = "";
+                break;
+            }
+
             messages.push({
                 role: "tool",
                 tool_call_id: toolCall.id,
@@ -290,8 +364,8 @@ export async function runAgentLoop(userMessage: string): Promise<string> {
             });
         }
 
-        if (hasProposeTool) {
-            break; // Stop LLM processing entirely since we must present the prompt to the user
+        if (hasProposeTool || directSent) {
+            break; // Stop LLM processing entirely
         }
 
         // Check if this was the last iteration

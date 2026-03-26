@@ -22,7 +22,7 @@
 - **Single command startup** — `npm run dev` auto-launches the embedding server; no separate processes to manage.
 - **Python writes directly to SQLite** — The ingestion script opens `memory.db`, loads the `vec0` extension, and inserts chunks + embeddings directly. **No temp files, no JSON handoff, no cross-process file passing.**
 - **Portable brain** — copy `memory.db` + `collections/` folder to move everything to a new machine.
-- **Local GPU acceleration** — Embeddings run on the user's GPU via `sentence-transformers` + CUDA. Falls back to Gemini API if no GPU is available.
+- **Local GPU acceleration** — Embeddings run on the user's GPU via `sentence-transformers` + CUDA. Gemini fallback is **disabled** by design to prevent vector space inconsistencies.
 - **Compact storage** — abbreviated values in DB (`U`/`A`, `D`, `p:`) to minimize database growth.
 
 ---
@@ -56,7 +56,7 @@
 - Normalized embeddings (`normalize_embeddings=True`)
 - CLS pooling mode (configured in `1_Pooling/config.json`)
 
-**Fallback:** `gemini-embedding-001` API at 768 dimensions via `outputDimensionality` parameter.
+**Fallback:** Disabled (strictly local-only to prevent vector space mismatches).
 
 **Why BGE-Base over BGE-Large:** BGE-Base is 2-3x faster with only marginally lower quality. On an RTX 4060, it embeds ~984 chunks from a 700-page book in ~40 seconds (31 batches × 32 chunks).
 
@@ -411,12 +411,13 @@ We use **structural chunking** — a pure text-analysis approach that splits at 
 
 #### Chunking Algorithm
 
-**Constants:**
+**Constants (Dynamically calculated based on `max_seq_length`):**
 ```python
-TARGET_CHUNK_SIZE = 1200    # target chars per chunk
-MAX_CHUNK_SIZE = 1800       # hard max before forced split
-MIN_CHUNK_SIZE = 80         # ignore tiny fragments
-OVERLAP_SIZE = 100          # chars of overlap between consecutive chunks
+# For a typical 512-token context model (1 token ≈ 4 chars):
+TARGET_CHUNK_SIZE = 1433    # target chars per chunk (max * 4 * 0.7)
+MAX_CHUNK_SIZE = 1843       # hard max before forced split (max * 4 * 0.9)
+MIN_CHUNK_SIZE = 80         # static minimum - ignore tiny fragments
+OVERLAP_SIZE = 100          # static - chars of overlap between consecutive chunks
 ```
 
 **Phase 1 — Paragraph splitting:**
@@ -534,16 +535,7 @@ async function embedLocal(texts: string[]): Promise<Float32Array[]> {
 }
 ```
 
-**Fallback:** If the local server is unreachable, falls back to Gemini API:
-```typescript
-async function embedGemini(text: string): Promise<Float32Array> {
-    const result = await geminiModel.embedContent({
-        content: { parts: [{ text }], role: "user" },
-        outputDimensionality: EMBEDDING_DIM,  // 768
-    });
-    return new Float32Array(result.embedding.values);
-}
-```
+**Fallback:** The system intentionally disables fallback to the Gemini embedding API to prevent vector space inconsistencies. `embed.ts` strictly requires `isLocalEmbeddingAvailable()` before proceeding.
 
 **Buffer conversion for sqlite-vec:**
 ```typescript
@@ -629,17 +621,43 @@ Channels isolate conversation memory. Every message belongs to a channel. Semant
 All state-changing operations go through **propose → confirm → execute** flow. Tools whose names begin with `propose_` write to `pending_confirmations` and return a confirmation prompt. Execution happens only after the user confirms.
 
 **Tools:**
-| Tool Name                 | Description                                            |
-|:--------------------------|:-------------------------------------------------------|
-| `propose_switch_channel`  | Propose switching to a different channel.              |
-| `propose_rename_channel`  | Propose renaming the current channel.                  |
-| `propose_sync_channels`   | Propose syncing two channels (merging their history).  |
-| `propose_delete_channel`  | Propose deleting a channel and its history.            |
-| `propose_change_setting`  | Propose updating system settings (top_k, decay, etc.). |
-| `propose_link_collection` | Link an external collection to the current channel.    |
-| `propose_unlink_collection`| Remove a collection from the current channel's scope. |
+| Tool Name                      | Description                                            |
+|:-------------------------------|:-------------------------------------------------------|
+| `propose_switch_channel`       | Propose switching to a different channel.              |
+| `propose_rename_channel`       | Propose renaming the current channel.                  |
+| `propose_sync_channels`        | Propose syncing two channels (merging their history).  |
+| `propose_delete_channel`       | Propose deleting a channel and its history.            |
+| `propose_change_setting`       | Propose updating system settings (top_k, decay, etc.). |
+| `propose_link_collection`      | Link an external collection to the current channel.    |
+| `propose_unlink_collection`    | Remove a collection from the current channel's scope.  |
+| `propose_delete_document`      | Delete a document from a collection (file + DB).       |
+| `propose_reingest_collections` | Re-index all documents with the current embedding model. Sends real-time progress messages to Telegram. |
+| `propose_model_migration`      | Migrate to a new embedding model (wipes memory.db).   |
 
-**Read-only tools (no confirmation):** `list_channels`, `get_current_channel`, `list_collections`, `deep_memory_search`
+**Read-only tools (no confirmation):** `list_channels`, `get_current_channel`, `list_collections`, `list_documents`, `get_channel_info`, `deep_memory_search`
+
+### `[DIRECT_SENT]` Mechanism
+
+Some read-only tools (e.g., `list_collections`) need deterministic, pre-formatted output that the LLM must not rephrase. These tools send messages **directly** to the user via `bot.api.sendMessage()` and return `"[DIRECT_SENT]"`. The agent loop in `agent.ts` detects this marker and:
+1. Sets `finalResponse` to an empty string.
+2. Breaks out of the tool-call loop immediately (no further LLM iteration).
+3. `bot.ts` skips `ctx.reply()` when the response is empty.
+
+This ensures the user receives exactly one message — the tool's formatted output — with no LLM-generated duplicate.
+
+### Telegram Slash Commands
+
+These commands are handled directly in `bot.ts` and bypass the LLM agent loop entirely:
+
+| Command          | Description                                           |
+|:-----------------|:------------------------------------------------------|
+| `/start`         | Welcome message and bot status.                       |
+| `/help`          | Help guide with all available commands.               |
+| `/settings`      | View current system settings table.                   |
+| `/documents`     | List all ingested documents with collection and link status. |
+| `/collections`   | List all available document collections.              |
+| `/clear`         | Wipe history for the current channel.                 |
+| `/global_reset`  | Wipe everything across all channels.                  |
 
 ---
 
@@ -647,19 +665,23 @@ All state-changing operations go through **propose → confirm → execute** flo
 
 ```
 1. MESSAGE ARRIVES → identify interface ('tg'), get active channel
-2. CHECK PENDING CONFIRMATION → route to confirmation handler if exists
-3. CHECK MESSAGE SIZE → if >8000 tokens, auto-ingest as paste
-4. STORE USER MESSAGE → type='M', speaker='U', embed immediately
-5. BUILD CONTEXT:
+2. CHECK SLASH COMMANDS → /documents, /collections, /settings handled directly (no LLM)
+3. CHECK PENDING CONFIRMATION → route to confirmation handler if exists
+4. CHECK MESSAGE SIZE → if >8000 tokens, auto-ingest as paste
+5. STORE USER MESSAGE → type='M', speaker='U', embed immediately
+6. BUILD CONTEXT:
    a) MEMORY.md (stable, cached)
    b) Rolling summary (messages 11-30)
    c) Semantic search results (current query)
    d) Last 20 messages verbatim
-6. SEND TO LLM with tools registered
-7. HANDLE TOOL CALLS (propose/read/execute)
-8. STORE ASSISTANT RESPONSE → type='M', speaker='A' (sanitized)
-9. CHECK SUMMARY TRIGGER → fire background summarization if needed
-10. DELIVER RESPONSE
+7. SEND TO LLM with tools registered
+8. HANDLE TOOL CALLS:
+   a) propose_* tools → halt loop, return confirmation prompt
+   b) [DIRECT_SENT] tools → halt loop, return empty (tool already messaged user)
+   c) Normal tools → append result, continue loop
+9. STORE ASSISTANT RESPONSE → type='M', speaker='A' (sanitized, skip if empty)
+10. CHECK SUMMARY TRIGGER → fire background summarization if needed
+11. DELIVER RESPONSE (skip if empty — tool already sent directly)
 ```
 
 ---
@@ -696,14 +718,19 @@ npm run dev
         ├── 1. Open memory.db (db.ts)
         │     ├── Load sqlite-vec extension
         │     ├── Run schema (CREATE TABLE IF NOT EXISTS...)
+        │     ├── createEmbeddingTable(dim) — dynamic vec0 dimension
         │     ├── Run migrations (ALTER TABLE for old schemas)
         │     └── Load settings cache
         ├── 2. Start embed server (index.ts)
         │     ├── spawn("python.exe", "scripts/embed_server.py")
         │     ├── Wait for "Embedding server running" on stdout
         │     └── Call refreshLocalAvailability() after detection
-        ├── 3. Start Telegram bot (long-polling)
-        └── 4. Ready — processing messages
+        ├── 3. Check model drift (sync.ts)
+        │     ├── Compare DB model/dim vs .env and server /health
+        │     ├── If mismatch → notify user via Telegram, prompt Yes/No
+        │     └── On confirm → wipe tables, recreate vec0 with new dim
+        ├── 4. Start Telegram bot (long-polling)
+        └── 5. Ready — processing messages
 ```
 
 ---
@@ -729,6 +756,14 @@ npm run dev
 9. **RAG sentinel channel.** Use `'__rag__'` for all RAG chunk channel values. Search scopes RAG via collection filter, not channel.
 
 10. **Duplicate prevention.** `UNIQUE(name, collection)` in `documents` table. On re-ingestion, Python clears old chunks and re-inserts.
+
+11. **Model Drift Detection.** `sync.ts` checks the embedding server metadata on startup. If the model or dimension changes, it performs a migration that automatically wipes the `memory`, `documents`, and `summaries` tables to prevent vector space corruption.
+
+12. **Re-ingestion progress messages.** `propose_reingest_collections` sends real-time Telegram messages via `bot.api.sendMessage()`: a start announcement, per-document completion updates (`✅ [1/5] col/file.pdf`), and a final summary.
+
+13. **`createEmbeddingTable(dim)`.** `db.ts` exports a function that drops and recreates `memory_embeddings` with the specified dimension. Used at startup and during model migration.
+
+14. **Null safety in migration.** `performMigration()` uses `?? 768` / `?? 512` defaults for `dimension` and `max_seq_length` to prevent crashes when server metadata is incomplete.
 
 ---
 

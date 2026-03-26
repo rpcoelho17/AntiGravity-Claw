@@ -333,3 +333,36 @@ export async function retryFailedEmbeddings(): Promise<void> {
         console.error("❌ Failed to retry embeddings:", err);
     }
 }
+
+// ── Clear Channel History ─────────────────────────────────────────────
+
+/**
+ * Wipe all history, embeddings, and summaries for a specific channel.
+ * Used for syncing with Telegram's "Clear History" manually or via /clear.
+ */
+export async function clearChannelHistory(channel: string): Promise<void> {
+    try {
+        db.transaction(() => {
+            // 1. Delete embeddings first (referencing memory ids)
+            db.prepare(`
+                DELETE FROM memory_embeddings 
+                WHERE rowid IN (SELECT id FROM memory WHERE channel = ?)
+            `).run(channel);
+
+            // 2. Delete memory records
+            db.prepare(`DELETE FROM memory WHERE channel = ?`).run(channel);
+
+            // 3. Delete summary
+            db.prepare(`DELETE FROM summaries WHERE channel = ?`).run(channel);
+        })();
+
+        // 4. Update memory cache and counter
+        summaryCache.delete(channel);
+        messageCounter.set(channel, 0);
+
+        console.log(`🧹 Cleared history and embeddings for channel: ${channel}`);
+    } catch (err) {
+        console.error(`❌ Failed to clear history for channel ${channel}:`, err);
+        throw err;
+    }
+}

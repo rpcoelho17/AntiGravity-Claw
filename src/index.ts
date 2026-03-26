@@ -111,9 +111,38 @@ console.log(`📡 Starting Telegram long-polling...\n`);
 // ── Start bot (long-polling, no webhook, no web server) ─────────────
 
 bot.start({
-    onStart: (botInfo) => {
+    onStart: async (botInfo) => {
         console.log(`✅ Bot started as @${botInfo.username}`);
         console.log(`   Send a message on Telegram to begin.\n`);
+
+        // ── 0. CLEAR PENDING CONFIRMATIONS ──
+        // Ensure a fresh state on startup to avoid annoying the user with old prompts
+        try {
+            const { clearPendingConfirmation } = await import("./memory/index.js");
+            clearPendingConfirmation("tg");
+            console.log("🧹 Startup: Pending confirmations cleared.");
+        } catch (err) {
+            console.warn("⚠️ Failed to clear pending confirmations:", err);
+        }
+
+        // ── 0.5 STARTUP DRIFT CHECK ──
+        // Check for model drift IMMEDIATELY on startup
+        try {
+            const { checkModelDrift } = await import("./memory/index.js");
+            const drift = await checkModelDrift();
+            if (drift) {
+                console.log("⚠️ STARTUP: Embedding model change detected. Notifying users...");
+                const msg = `⚠️ **EMBEDDING MODEL CHANGE DETECTED**\n\nI've detected that your default embedding model has changed.\n\nShould I switch to the new model? This will wipe clean your **memory.db** and all the ingestions!\n\nRespond by typing **Yes** or **no**.`;
+                
+                for (const userId of config.ALLOWED_USER_IDS) {
+                    await bot.api.sendMessage(userId, msg, { parse_mode: "Markdown" }).catch(err => {
+                        console.warn(`⚠️ Failed to notify user ${userId}:`, err.message);
+                    });
+                }
+            }
+        } catch (err) {
+            console.warn("⚠️ Failed to perform startup drift check:", err);
+        }
     },
 });
 

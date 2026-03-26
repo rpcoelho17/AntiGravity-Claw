@@ -21,7 +21,7 @@ const genAI = new GoogleGenerativeAI(config.GOOGLE_API_KEY);
 // Use the model the user requested
 // Model chain
 const PRIMARY_MODEL = config.PRIMARY_MODEL;
-const FALLBACK_MODEL = "gemini-1.5-flash";
+const FALLBACK_MODEL = "gemini-2.5-flash";
 
 export interface ToolCall {
     id: string;

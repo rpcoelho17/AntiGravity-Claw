@@ -159,6 +159,20 @@ try {
     // Column likely already exists
 }
 
+// ── Dynamic embedding table re-creation ─────────────────────────────
+
+/**
+ * Drops and re-creates the vec0 virtual table with a given dimension.
+ * Used by sync.ts when a model drift is detected.
+ */
+export function createEmbeddingTable(dimension: number) {
+    db.exec(`DROP TABLE IF EXISTS memory_embeddings`);
+    db.exec(`CREATE VIRTUAL TABLE memory_embeddings USING vec0(
+        embedding FLOAT[${dimension}]
+    )`);
+    console.log(`📏 Re-initialized memory_embeddings with dimension: ${dimension}`);
+}
+
 // ── Migration: Upgrade dimension if needed ──────────────────────────
 try {
     // Check if current embeddings have a different dimension
@@ -167,14 +181,9 @@ try {
         const buf = (testRow as any).embedding;
         if (buf.length !== 768 * 4) { // Float32 is 4 bytes, BGE-base = 768
             console.log("⚠️ Wrong-dimension embeddings detected. Recreating for BGE-base (768d)...");
-            db.exec(`
-                DROP TABLE IF EXISTS memory_embeddings;
-                CREATE VIRTUAL TABLE IF NOT EXISTS memory_embeddings USING vec0(
-                    embedding FLOAT[768]
-                );
-                DELETE FROM memory;
-                DELETE FROM documents;
-            `);
+            createEmbeddingTable(768);
+            db.exec(`DELETE FROM memory`);
+            db.exec(`DELETE FROM documents`);
         }
     }
 } catch (e) {

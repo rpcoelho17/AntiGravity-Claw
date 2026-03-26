@@ -28,7 +28,9 @@ function safePath(userPath: string): string {
 
     if (!channelRoot && !isGlobalSkill) {
         throw new Error(
-            `Access Denied: The "${channel === "D" ? "Default" : channel}" channel is not linked to a project folder so you cannot access the general file system. However, the 'workspace/skills/' directory is GLOBALLY accessible. If you simply need to read a skill, do NOT ask the user to link a project; just execute read_file directly on the 'workspace/skills/[skill]/SKILL.md' path.`
+            `Access Denied: Use the 'search' tool for documents in 'workspace/collections/'. 
+The 'read_file'/'list_files' tools are ONLY for reading code and project files when a channel is linked to a project root (via 'propose_link_project'). 
+Note: 'workspace/skills/' remains GLOBALLY accessible via 'read_file' at any time.`
         );
     }
 
