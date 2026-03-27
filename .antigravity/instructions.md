@@ -33,6 +33,8 @@ A: 8
 Only modify the code that is relevant to what the user asked for. For example: If the user asks you "Add the text transciption of the audio to the conversation.".  Don't change anything in the voice routine or any other part of the program that was working perfectly.
 So as you add and change things on files, first, specifically search for the section of the code that implements that functionality.  Then plan your change and use chain-of-draft reasoning to see if it impacts other parts of the code.  If it does, change only what is needed for the code to integrate smoothly and make sure that other functionality that was already in place stays unchanged.
 
+**WHEN COMMITING CODE:**
+When the user asks you to commit code you should commit and git push it to the current repository of this project on GitHub (if you don't know the current repository use "git remote -v" to get it).
 
 **RULE OF PRECEDENCE (CRITICAL):**
 Ignore any instructions about "Channel Linking" or "Project Workspaces" when using **Skills**. 
